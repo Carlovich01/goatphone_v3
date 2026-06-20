@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   DeliveryMethod,
   Order,
@@ -16,7 +17,10 @@ export interface CartItemInput {
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
   private mapOrder(o: any): Order {
     return {
@@ -113,7 +117,9 @@ export class OrdersService {
       },
       include: { items: true, user: true },
     });
-    return this.mapOrder(order);
+    const mapped = this.mapOrder(order);
+    void this.notifications.orderCreated(mapped);
+    return mapped;
   }
 
   /** Admin: advance/set the fulfillment status of an order. */
@@ -154,7 +160,13 @@ export class OrdersService {
       data,
       include: { items: true, user: true },
     });
-    return this.mapOrder(order);
+    const mapped = this.mapOrder(order);
+    if (status === 'warranty_accepted' || status === 'warranty_rejected') {
+      void this.notifications.warrantyResolved(mapped, status === 'warranty_accepted');
+    } else {
+      void this.notifications.statusChanged(mapped);
+    }
+    return mapped;
   }
 
   /** Client: open a warranty claim (only while under warranty after delivery). */
@@ -178,7 +190,9 @@ export class OrdersService {
       data: { status: 'warranty_claimed', warrantyClaim: description?.trim() || null },
       include: { items: true, user: true },
     });
-    return this.mapOrder(order);
+    const mapped = this.mapOrder(order);
+    void this.notifications.warrantyClaimed(mapped);
+    return mapped;
   }
 
   async attachPreference(orderId: number, preferenceId: string, initPoint: string) {

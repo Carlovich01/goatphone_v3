@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmbeddingService } from '../ai/embedding.service';
 import { ComparisonService } from '../comparison/comparison.service';
 import { ScoringService } from '../comparison/scoring.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { mapProduct } from '../common/spec-mapper';
 import { CreateProductDto, UpdateProductDto } from './dto';
 import { Product, ProductSummary, effectivePrice } from '@goatphone/shared';
@@ -23,6 +24,7 @@ export class CatalogService {
     private embeddings: EmbeddingService,
     private comparison: ComparisonService,
     private scoring: ScoringService,
+    private notifications: NotificationsService,
   ) {}
 
   async list(filters: ListFilters): Promise<ProductSummary[]> {
@@ -161,7 +163,9 @@ export class CatalogService {
       include: { datasetPhone: true },
     });
     this.scoring.invalidate();
-    return mapProduct(updated);
+    const mapped = mapProduct(updated);
+    void this.notifications.offerCreated(mapped);
+    return mapped;
   }
 
   /** Admin: remove the temporary offer from a product. */

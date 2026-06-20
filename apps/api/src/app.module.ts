@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import * as path from 'path';
 import { PrismaModule } from './prisma/prisma.module';
+import { NotificationsModule } from './notifications/notifications.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { DatasetModule } from './dataset/dataset.module';
@@ -20,6 +21,7 @@ import { OrdersModule } from './orders/orders.module';
     }),
     ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
     PrismaModule,
+    NotificationsModule,
     AuthModule,
     UsersModule,
     DatasetModule,
