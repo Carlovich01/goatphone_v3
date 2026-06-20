@@ -5,7 +5,7 @@ import { ComparisonService } from '../comparison/comparison.service';
 import { ScoringService } from '../comparison/scoring.service';
 import { mapProduct } from '../common/spec-mapper';
 import { CreateProductDto, UpdateProductDto } from './dto';
-import { Product, ProductSummary } from '@goatphone/shared';
+import { Product, ProductSummary, effectivePrice } from '@goatphone/shared';
 
 export interface ListFilters {
   q?: string;
@@ -54,6 +54,8 @@ export class CatalogService {
       brand: p.brand,
       model: p.model,
       priceArs: p.priceArs,
+      offerPriceArs: p.offerPriceArs ?? null,
+      offerEndsAt: p.offerEndsAt ? p.offerEndsAt.toISOString() : null,
       stock: p.stock,
       imageUrl: p.imageUrl ?? null,
       score: scoreById.get(p.id) ?? 0,
@@ -61,12 +63,14 @@ export class CatalogService {
       storage: p.datasetPhone?.storage ?? null,
     }));
 
+    // sorting by price uses the effective (offer-aware) price
+    const eff = (s: ProductSummary) => effectivePrice(s);
     switch (filters.sort) {
       case 'priceAsc':
-        summaries.sort((a, b) => a.priceArs - b.priceArs);
+        summaries.sort((a, b) => eff(a) - eff(b));
         break;
       case 'priceDesc':
-        summaries.sort((a, b) => b.priceArs - a.priceArs);
+        summaries.sort((a, b) => eff(b) - eff(a));
         break;
       case 'newest':
         summaries.sort((a, b) => b.id - a.id);
@@ -136,6 +140,39 @@ export class CatalogService {
     });
     // price/stock affect the embedding doc
     await this.embeddings.upsertForProduct(id);
+    this.scoring.invalidate();
+    return mapProduct(updated);
+  }
+
+  /** Admin: set a temporary offer (sale price + expiry date) on a product. */
+  async setOffer(id: number, offerPriceArs: number, offerEndsAt: string): Promise<Product> {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) throw new NotFoundException('Celular no encontrado');
+    if (offerPriceArs <= 0 || offerPriceArs >= product.priceArs) {
+      throw new BadRequestException('El precio de oferta debe ser menor al precio normal.');
+    }
+    const ends = new Date(offerEndsAt);
+    if (Number.isNaN(ends.getTime()) || ends.getTime() <= Date.now()) {
+      throw new BadRequestException('La fecha de fin de la oferta debe ser futura.');
+    }
+    const updated = await this.prisma.product.update({
+      where: { id },
+      data: { offerPriceArs, offerEndsAt: ends },
+      include: { datasetPhone: true },
+    });
+    this.scoring.invalidate();
+    return mapProduct(updated);
+  }
+
+  /** Admin: remove the temporary offer from a product. */
+  async clearOffer(id: number): Promise<Product> {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) throw new NotFoundException('Celular no encontrado');
+    const updated = await this.prisma.product.update({
+      where: { id },
+      data: { offerPriceArs: null, offerEndsAt: null },
+      include: { datasetPhone: true },
+    });
     this.scoring.invalidate();
     return mapProduct(updated);
   }

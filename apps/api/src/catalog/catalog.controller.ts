@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CatalogService, ListFilters } from './catalog.service';
-import { CreateProductDto, UpdateProductDto } from './dto';
+import { CreateProductDto, UpdateProductDto, SetOfferDto } from './dto';
 import { JwtAuthGuard, Roles, RolesGuard } from '../auth/guards';
 
 @Controller('catalog')
@@ -68,6 +68,20 @@ export class CatalogController {
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateProductDto) {
     return this.catalog.update(id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Patch(':id/offer')
+  setOffer(@Param('id', ParseIntPipe) id: number, @Body() dto: SetOfferDto) {
+    return this.catalog.setOffer(id, dto.offerPriceArs, dto.offerEndsAt);
+  }
+
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Delete(':id/offer')
+  clearOffer(@Param('id', ParseIntPipe) id: number) {
+    return this.catalog.clearOffer(id);
   }
 
   @UseGuards(JwtAuthGuard, RolesGuard)

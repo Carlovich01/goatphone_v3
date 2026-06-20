@@ -3,11 +3,11 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { X, Trophy, MemoryStick, HardDrive } from 'lucide-react';
-import { ComparisonResult, SPEC_CATEGORIES, SPEC_DEFS } from '@goatphone/shared';
+import { ComparisonResult, SPEC_CATEGORIES, SPEC_DEFS, effectivePrice } from '@goatphone/shared';
 import { api } from '@/lib/api';
 import { Button, Card, Spinner } from '@/components/ui';
 import { ScoreBadge } from '@/components/ScoreBadge';
-import { formatArs } from '@/lib/format';
+import { PriceTag } from '@/components/PriceTag';
 import { useCompare } from '@/store/compare';
 import { useCart } from '@/store/cart';
 import { SpecCard } from './SpecCard';
@@ -130,7 +130,7 @@ export function ComparisonView({ ids, managed = false }: { ids: number[]; manage
                   >
                     {p.model}
                   </Link>
-                  <p className="text-sm">{formatArs(p.priceArs)}</p>
+                  <PriceTag p={p} priceClass="text-sm font-bold" showUntil />
                 </div>
                 {sc && <ScoreBadge score={sc.global} size="sm" />}
               </div>
@@ -152,7 +152,7 @@ export function ComparisonView({ ids, managed = false }: { ids: number[]; manage
                 variant="primary"
                 className="mt-3 w-full"
                 disabled={p.stock <= 0}
-                onClick={() => cart.add({ productId: p.id, brand: p.brand, model: p.model, priceArs: p.priceArs, imageUrl: p.imageUrl })}
+                onClick={() => cart.add({ productId: p.id, brand: p.brand, model: p.model, priceArs: effectivePrice(p), imageUrl: p.imageUrl })}
               >
                 {p.stock > 0 ? 'Agregar al carrito' : 'Sin stock'}
               </Button>

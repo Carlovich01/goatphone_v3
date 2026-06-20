@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
+import { DeliveryMethod } from '@goatphone/shared';
 import { OrdersService, CartItemInput } from '../orders/orders.service';
 
 @Injectable()
@@ -31,10 +32,10 @@ export class PaymentsService {
     return new MercadoPagoConfig({ accessToken: this.accessToken });
   }
 
-  async checkout(userId: number, items: CartItemInput[]) {
+  async checkout(userId: number, items: CartItemInput[], deliveryMethod: DeliveryMethod) {
     // Validate MP config before creating the order to avoid orphan pending orders.
     const client = this.client();
-    const order = await this.orders.createPending(userId, items);
+    const order = await this.orders.createPending(userId, items, deliveryMethod);
 
     const preference = new Preference(client);
     const body: any = {

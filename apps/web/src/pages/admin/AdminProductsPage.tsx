@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Search, Plus, Trash2, Save, RefreshCw } from 'lucide-react';
-import { DatasetPhone, Product } from '@goatphone/shared';
+import { Search, Plus, Trash2, Save, RefreshCw, Tag } from 'lucide-react';
+import { DatasetPhone, Product, isOfferActive } from '@goatphone/shared';
 import { api } from '@/lib/api';
 import { Button, Card, Input, Spinner } from '@/components/ui';
 import { formatArs } from '@/lib/format';
@@ -162,12 +162,26 @@ export function AdminProductsPage() {
   );
 }
 
+/** ISO string -> value for a <input type="datetime-local"> (local time). */
+function toLocalInput(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+}
+
 function ProductRow({ product, onChange }: { product: Product; onChange: () => void }) {
   const [price, setPrice] = useState(String(product.priceArs));
   const [stock, setStock] = useState(String(product.stock));
   const [active, setActive] = useState(product.isActive);
   const [saving, setSaving] = useState(false);
   const [removing, setRemoving] = useState(false);
+
+  // temporary offer
+  const [offerPrice, setOfferPrice] = useState(product.offerPriceArs != null ? String(product.offerPriceArs) : '');
+  const [offerEnds, setOfferEnds] = useState(toLocalInput(product.offerEndsAt));
+  const [offerBusy, setOfferBusy] = useState(false);
+  const [offerErr, setOfferErr] = useState('');
 
   // unsaved-changes detection: any field differs from the persisted value
   const dirty =
@@ -203,8 +217,39 @@ function ProductRow({ product, onChange }: { product: Product; onChange: () => v
     }
   };
 
+  const applyOffer = async () => {
+    setOfferErr('');
+    setOfferBusy(true);
+    try {
+      await api.patch(`/catalog/${product.id}/offer`, {
+        offerPriceArs: Number(offerPrice),
+        offerEndsAt: new Date(offerEnds).toISOString(),
+      });
+      onChange();
+    } catch (e: any) {
+      setOfferErr(e.message || 'Error al aplicar la oferta');
+    } finally {
+      setOfferBusy(false);
+    }
+  };
+
+  const removeOffer = async () => {
+    setOfferBusy(true);
+    try {
+      await api.delete(`/catalog/${product.id}/offer`);
+      setOfferPrice('');
+      setOfferEnds('');
+      onChange();
+    } finally {
+      setOfferBusy(false);
+    }
+  };
+
+  const hasOffer = product.offerPriceArs != null;
+
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-slate-200 p-2 text-sm">
+    <div className="space-y-2 rounded-lg border border-slate-200 p-2 text-sm">
+    <div className="flex flex-wrap items-center gap-3">
       <div className="flex h-12 w-12 items-center justify-center rounded bg-slate-100">
         {product.imageUrl ? (
           <img src={product.imageUrl} alt={product.model} className="h-full w-full object-contain p-1" />
@@ -245,6 +290,54 @@ function ProductRow({ product, onChange }: { product: Product; onChange: () => v
       <Button variant="danger" className="px-2 py-1" onClick={remove} disabled={removing} title="Borrar del catálogo">
         <Trash2 size={14} />
       </Button>
+    </div>
+
+    {/* temporary offer */}
+    <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-2">
+      <span className="flex items-center gap-1 text-xs font-medium text-green-700">
+        <Tag size={14} /> Oferta temporal
+      </span>
+      <label className="text-xs text-slate-500">
+        Precio oferta
+        <Input
+          type="number"
+          value={offerPrice}
+          onChange={(e) => setOfferPrice(e.target.value)}
+          placeholder="menor al normal"
+          className="w-28"
+        />
+      </label>
+      <label className="text-xs text-slate-500">
+        Hasta
+        <Input
+          type="datetime-local"
+          value={offerEnds}
+          onChange={(e) => setOfferEnds(e.target.value)}
+          className="w-52"
+        />
+      </label>
+      <Button
+        variant="primary"
+        className="px-2 py-1"
+        onClick={applyOffer}
+        disabled={offerBusy || !offerPrice || !offerEnds}
+      >
+        {offerBusy ? 'Guardando…' : 'Aplicar oferta'}
+      </Button>
+      {hasOffer && (
+        <Button variant="outline" className="px-2 py-1" onClick={removeOffer} disabled={offerBusy}>
+          Quitar oferta
+        </Button>
+      )}
+      {isOfferActive(product) ? (
+        <span className="text-xs font-medium text-green-700">
+          Activa hasta {new Date(product.offerEndsAt!).toLocaleString('es-AR')}
+        </span>
+      ) : hasOffer ? (
+        <span className="text-xs text-slate-400">Oferta vencida</span>
+      ) : null}
+      {offerErr && <span className="text-xs text-red-600">{offerErr}</span>}
+    </div>
     </div>
   );
 }

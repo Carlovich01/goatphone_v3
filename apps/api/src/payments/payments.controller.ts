@@ -9,8 +9,9 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { IsArray, IsInt, Min, ValidateNested } from 'class-validator';
+import { IsArray, IsIn, IsInt, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { DeliveryMethod } from '@goatphone/shared';
 import { PaymentsService } from './payments.service';
 import { CurrentUser, JwtAuthGuard, RequestUser } from '../auth/guards';
 
@@ -28,6 +29,9 @@ class CheckoutDto {
   @ValidateNested({ each: true })
   @Type(() => CartItemDto)
   items!: CartItemDto[];
+
+  @IsIn(['pickup', 'shipping'])
+  deliveryMethod!: DeliveryMethod;
 }
 
 @Controller('payments')
@@ -37,7 +41,7 @@ export class PaymentsController {
   @UseGuards(JwtAuthGuard)
   @Post('checkout')
   checkout(@CurrentUser() user: RequestUser, @Body() dto: CheckoutDto) {
-    return this.payments.checkout(user.id, dto.items);
+    return this.payments.checkout(user.id, dto.items, dto.deliveryMethod);
   }
 
   // Mercado Pago calls this (needs a public URL, e.g. ngrok, to fire in local dev)

@@ -51,6 +51,10 @@ export interface Product {
   brand: string;
   model: string;
   priceArs: number;
+  /** Temporary sale price (null = no offer). */
+  offerPriceArs: number | null;
+  /** ISO date when the temporary offer expires (null = no offer). */
+  offerEndsAt: string | null;
   stock: number;
   imageUrl: string | null;
   description: string | null;
@@ -65,6 +69,8 @@ export interface ProductSummary {
   brand: string;
   model: string;
   priceArs: number;
+  offerPriceArs: number | null;
+  offerEndsAt: string | null;
   stock: number;
   imageUrl: string | null;
   score: number;
@@ -72,6 +78,27 @@ export interface ProductSummary {
   ram: number | null;
   /** Internal storage in GB (for the catalog card). */
   storage: number | null;
+}
+
+/** Minimal shape needed to evaluate an offer. */
+export interface OfferLike {
+  priceArs: number;
+  offerPriceArs: number | null;
+  offerEndsAt: string | null;
+}
+
+/** True if the product currently has an active (not expired) temporary offer. */
+export function isOfferActive(p: OfferLike, now: number = Date.now()): boolean {
+  return (
+    p.offerPriceArs != null &&
+    p.offerEndsAt != null &&
+    new Date(p.offerEndsAt).getTime() > now
+  );
+}
+
+/** The price the customer actually pays (offer price if active, else base price). */
+export function effectivePrice(p: OfferLike): number {
+  return isOfferActive(p) ? (p.offerPriceArs as number) : p.priceArs;
 }
 
 // ---- Scoring ----
@@ -160,7 +187,48 @@ export interface ChatMessage {
 }
 
 // ---- Orders ----
-export type OrderStatus = 'pending' | 'paid' | 'failed';
+export type OrderStatus =
+  | 'pending' // esperando pago
+  | 'failed' // pago rechazado
+  | 'paid' // pago recibido
+  | 'ready_pickup' // listo para retirar en local (retiro)
+  | 'preparing' // preparando para el envio (envio)
+  | 'shipped' // en manos del cartero (envio)
+  | 'delivered'; // entregado
+
+export type DeliveryMethod = 'pickup' | 'shipping';
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  pending: 'Pendiente de pago',
+  failed: 'Pago rechazado',
+  paid: 'Pago recibido',
+  ready_pickup: 'Listo para retirar',
+  preparing: 'Preparando para el envío',
+  shipped: 'En manos del cartero',
+  delivered: 'Entregado',
+};
+
+export const DELIVERY_LABELS: Record<DeliveryMethod, string> = {
+  pickup: 'Retiro en local',
+  shipping: 'Envío a domicilio',
+};
+
+/** Ordered fulfillment steps shown as a progress timeline, per delivery method. */
+export const FULFILLMENT_STEPS: Record<DeliveryMethod, OrderStatus[]> = {
+  pickup: ['paid', 'ready_pickup', 'delivered'],
+  shipping: ['paid', 'preparing', 'shipped', 'delivered'],
+};
+
+/** Next fulfillment status the admin can advance an order to (null if final). */
+export function nextOrderStatus(
+  status: OrderStatus,
+  method: DeliveryMethod,
+): OrderStatus | null {
+  const steps = FULFILLMENT_STEPS[method];
+  const i = steps.indexOf(status);
+  if (i === -1 || i >= steps.length - 1) return null;
+  return steps[i + 1];
+}
 
 export interface OrderItem {
   productId: number;
@@ -175,6 +243,13 @@ export interface Order {
   status: OrderStatus;
   totalArs: number;
   items: OrderItem[];
+  deliveryMethod: DeliveryMethod;
+  // customer snapshot / contact data
+  customerName: string | null;
+  customerEmail: string | null;
+  dni: string | null;
+  phone: string | null;
+  address: string | null;
   mpPreferenceId: string | null;
   initPoint: string | null;
   createdAt: string;
@@ -191,4 +266,11 @@ export interface AuthUser {
 export interface AuthResponse {
   token: string;
   user: AuthUser;
+}
+
+/** Full profile (incl. shipping/pickup data) read from the DB, not the token. */
+export interface UserProfile extends AuthUser {
+  dni: string | null;
+  phone: string | null;
+  address: string | null;
 }

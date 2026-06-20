@@ -50,6 +50,12 @@ export function mapProduct(p: any): Product {
     brand: p.brand,
     model: p.model,
     priceArs: p.priceArs,
+    offerPriceArs: p.offerPriceArs ?? null,
+    offerEndsAt: p.offerEndsAt
+      ? p.offerEndsAt instanceof Date
+        ? p.offerEndsAt.toISOString()
+        : p.offerEndsAt
+      : null,
     stock: p.stock,
     imageUrl: p.imageUrl ?? null,
     description: p.description ?? null,

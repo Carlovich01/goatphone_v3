@@ -32,6 +32,15 @@ export class CreateProductDto {
   isActive?: boolean;
 }
 
+export class SetOfferDto {
+  @IsNumber()
+  @Min(0)
+  offerPriceArs!: number;
+
+  @IsString()
+  offerEndsAt!: string; // ISO date string
+}
+
 export class UpdateProductDto {
   @IsOptional()
   @IsNumber()

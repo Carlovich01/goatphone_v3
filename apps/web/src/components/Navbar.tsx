@@ -53,6 +53,9 @@ export function Navbar() {
               <Link to="/orders">
                 <Button variant="nav">Mis compras</Button>
               </Link>
+              <Link to="/account">
+                <Button variant="nav">Mi cuenta</Button>
+              </Link>
               <span className="hidden text-sm text-slate-400 sm:inline">{user.name}</span>
               <Button variant="nav" onClick={logout} title="Salir">
                 <LogOut size={18} />

@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Order } from '@goatphone/shared';
+import { DeliveryMethod, Order, OrderStatus, effectivePrice } from '@goatphone/shared';
 
 export interface CartItemInput {
   productId: number;
@@ -16,6 +16,12 @@ export class OrdersService {
       id: o.id,
       status: o.status,
       totalArs: o.totalArs,
+      deliveryMethod: o.deliveryMethod,
+      customerName: o.user?.name ?? null,
+      customerEmail: o.user?.email ?? null,
+      dni: o.dni ?? null,
+      phone: o.phone ?? null,
+      address: o.address ?? null,
       mpPreferenceId: o.mpPreferenceId ?? null,
       initPoint: o.initPoint ?? null,
       createdAt: o.createdAt instanceof Date ? o.createdAt.toISOString() : o.createdAt,
@@ -29,8 +35,30 @@ export class OrdersService {
     };
   }
 
-  async createPending(userId: number, items: CartItemInput[]): Promise<Order> {
+  async createPending(
+    userId: number,
+    items: CartItemInput[],
+    deliveryMethod: DeliveryMethod,
+  ): Promise<Order> {
     if (!items?.length) throw new BadRequestException('El carrito esta vacio');
+
+    // The buyer must have completed the data required for the chosen method.
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const dni = user?.dni?.trim();
+    const phone = user?.phone?.trim();
+    const address = user?.address?.trim();
+    if (!dni) {
+      throw new BadRequestException('Antes de pagar completá tu DNI en "Mi cuenta".');
+    }
+    if (!phone) {
+      throw new BadRequestException('Antes de pagar completá tu teléfono en "Mi cuenta".');
+    }
+    if (deliveryMethod === 'shipping' && !address) {
+      throw new BadRequestException(
+        'Para envío a domicilio completá tu dirección en "Mi cuenta".',
+      );
+    }
+
     const ids = items.map((i) => i.productId);
     const products = await this.prisma.product.findMany({
       where: { id: { in: ids }, isActive: true },
@@ -43,13 +71,19 @@ export class OrdersService {
       if (!p) throw new BadRequestException(`Producto ${i.productId} no disponible`);
       const qty = Math.max(1, Math.floor(i.quantity));
       if (p.stock < qty) throw new BadRequestException(`Stock insuficiente para ${p.brand} ${p.model}`);
-      total += p.priceArs * qty;
+      // charge the offer price when there is an active temporary offer
+      const unit = effectivePrice({
+        priceArs: p.priceArs,
+        offerPriceArs: p.offerPriceArs ?? null,
+        offerEndsAt: p.offerEndsAt ? p.offerEndsAt.toISOString() : null,
+      });
+      total += unit * qty;
       return {
         productId: p.id,
         brand: p.brand,
         model: p.model,
         quantity: qty,
-        unitPriceArs: p.priceArs,
+        unitPriceArs: unit,
       };
     });
 
@@ -57,10 +91,39 @@ export class OrdersService {
       data: {
         userId,
         status: 'pending',
+        deliveryMethod,
+        dni,
+        phone,
+        address: deliveryMethod === 'shipping' ? address : null,
         totalArs: total,
         items: { create: orderItems },
       },
-      include: { items: true },
+      include: { items: true, user: true },
+    });
+    return this.mapOrder(order);
+  }
+
+  /** Admin: advance/set the fulfillment status of an order. */
+  async updateStatus(orderId: number, status: OrderStatus): Promise<Order> {
+    const allowed: OrderStatus[] = [
+      'paid',
+      'ready_pickup',
+      'preparing',
+      'shipped',
+      'delivered',
+    ];
+    if (!allowed.includes(status)) {
+      throw new BadRequestException('Estado de orden inválido');
+    }
+    const existing = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!existing) throw new NotFoundException('Orden no encontrada');
+    if (existing.status === 'pending' || existing.status === 'failed') {
+      throw new BadRequestException('La orden todavía no está paga');
+    }
+    const order = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status },
+      include: { items: true, user: true },
     });
     return this.mapOrder(order);
   }
@@ -103,7 +166,7 @@ export class OrdersService {
   async forUser(userId: number): Promise<Order[]> {
     const orders = await this.prisma.order.findMany({
       where: { userId },
-      include: { items: true },
+      include: { items: true, user: true },
       orderBy: { id: 'desc' },
     });
     return orders.map((o) => this.mapOrder(o));
@@ -112,7 +175,7 @@ export class OrdersService {
   async one(orderId: number, userId: number): Promise<Order> {
     const o = await this.prisma.order.findFirst({
       where: { id: orderId, userId },
-      include: { items: true },
+      include: { items: true, user: true },
     });
     if (!o) throw new NotFoundException('Orden no encontrada');
     return this.mapOrder(o);
@@ -120,7 +183,7 @@ export class OrdersService {
 
   async all(): Promise<Order[]> {
     const orders = await this.prisma.order.findMany({
-      include: { items: true },
+      include: { items: true, user: true },
       orderBy: { id: 'desc' },
     });
     return orders.map((o) => this.mapOrder(o));

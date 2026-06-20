@@ -11,6 +11,7 @@ import { ComparePage } from '@/pages/ComparePage';
 import { CartPage } from '@/pages/CartPage';
 import { CheckoutResultPage } from '@/pages/CheckoutResultPage';
 import { OrdersPage } from '@/pages/OrdersPage';
+import { AccountPage } from '@/pages/AccountPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { AdminPage } from '@/pages/admin/AdminPage';
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout/result" element={<CheckoutResultPage />} />
           <Route path="/orders" element={<RequireAuth><OrdersPage /></RequireAuth>} />
+          <Route path="/account" element={<RequireAuth><AccountPage /></RequireAuth>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin/*" element={<RequireAdmin><AdminPage /></RequireAdmin>} />

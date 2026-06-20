@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
-import { GitCompare, ShoppingCart, Check, MemoryStick, HardDrive } from 'lucide-react';
-import { ProductSummary } from '@goatphone/shared';
-import { formatArs } from '@/lib/format';
+import { GitCompare, ShoppingCart, Check, MemoryStick, HardDrive, Tag } from 'lucide-react';
+import { ProductSummary, effectivePrice, isOfferActive } from '@goatphone/shared';
 import { ScoreBadge } from './ScoreBadge';
+import { PriceTag } from './PriceTag';
 import { Button } from './ui';
 import { useCompare } from '@/store/compare';
 import { useCart } from '@/store/cart';
@@ -26,8 +26,13 @@ export function ProductCard({ p }: { p: ProductSummary }) {
           <ScoreBadge score={p.score} size="sm" />
         </div>
         {p.stock <= 0 && (
-          <span className="absolute left-2 top-2 rounded bg-red-600/90 px-2 py-0.5 text-xs">
+          <span className="absolute left-2 top-2 rounded bg-red-600/90 px-2 py-0.5 text-xs text-white">
             Sin stock
+          </span>
+        )}
+        {isOfferActive(p) && p.stock > 0 && (
+          <span className="absolute left-2 top-2 flex items-center gap-1 rounded bg-green-600 px-2 py-0.5 text-xs font-semibold text-white">
+            <Tag size={12} /> Oferta
           </span>
         )}
       </Link>
@@ -53,7 +58,7 @@ export function ProductCard({ p }: { p: ProductSummary }) {
             )}
           </div>
         )}
-        <p className="text-lg font-bold">{formatArs(p.priceArs)}</p>
+        <PriceTag p={p} showUntil />
 
         <div className="mt-auto flex gap-2">
           <Button
@@ -75,7 +80,7 @@ export function ProductCard({ p }: { p: ProductSummary }) {
                 productId: p.id,
                 brand: p.brand,
                 model: p.model,
-                priceArs: p.priceArs,
+                priceArs: effectivePrice(p),
                 imageUrl: p.imageUrl,
               })
             }

@@ -170,6 +170,8 @@ export class AiService {
       brand: p.brand,
       model: p.model,
       priceArs: p.priceArs,
+      offerPriceArs: p.offerPriceArs ?? null,
+      offerEndsAt: p.offerEndsAt ? new Date(p.offerEndsAt).toISOString() : null,
       stock: p.stock,
       imageUrl: p.imageUrl,
       description: p.description,
