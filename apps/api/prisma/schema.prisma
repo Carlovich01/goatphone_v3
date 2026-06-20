@@ -1,0 +1,169 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+/// Full smartphone dataset imported from imputed_final.csv (902 rows).
+/// Source of reference data the admin searches to build the catalog.
+model DatasetPhone {
+  id    Int    @id @default(autoincrement())
+  pos   Float?
+  brand String
+  model String
+  price Float? // INR reference price (NOT the sale price)
+  rating Float?
+
+  dualSim    Boolean @default(false)
+  has3g      Boolean @default(false)
+  has4g      Boolean @default(false)
+  has5g      Boolean @default(false)
+  volte      Boolean @default(false)
+  vo5g       Boolean @default(false)
+  wifi       Boolean @default(false)
+  nfc        Boolean @default(false)
+  irBlaster  Boolean @default(false)
+
+  processorCore     Float?
+  processorSpeedGhz Float?
+  ram               Float?
+  storage           Float?
+  batteryCapacity   Float?
+  isFastCharging    Boolean @default(false)
+  fastChargingCapacity Float?
+  displaySize       Float?
+  displayRefreshRate Float?
+  cameraNotchType   String?
+  pixelWidth        Float?
+  pixelHeight       Float?
+  displayPpi        Float?
+  os                String?
+  isMemoryCardSupported Boolean @default(false)
+  maxCardGb         Float?
+  primaryRearMp     Float?
+  primaryFrontMp    Float?
+  numRearCameras    Float?
+  numFrontCameras   Float?
+  processorBrand    String?
+  processorModel    String?
+
+  products Product[]
+
+  @@index([brand])
+  @@index([model])
+  @@map("dataset_phones")
+}
+
+/// A phone the admin selected for the catalog, with manual sale data.
+model Product {
+  id            Int     @id @default(autoincrement())
+  datasetPhone  DatasetPhone @relation(fields: [datasetPhoneId], references: [id])
+  datasetPhoneId Int
+  brand         String
+  model         String
+  priceArs      Float
+  stock         Int     @default(0)
+  imageUrl      String?
+  description   String?
+  isActive      Boolean @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  embedding  ProductEmbedding?
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+/// pgvector embedding of a product spec document for semantic RAG retrieval.
+model ProductEmbedding {
+  productId Int     @id
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  docText   String
+  embedding Unsupported("vector(768)")?
+
+  @@map("product_embeddings")
+}
+
+/// Precomputed distribution statistics for each spec, over the whole dataset.
+/// Drives both the scoring normalization and the "position vs mean" charts.
+model SpecStat {
+  specKey   String  @id
+  type      String  // quantitative | categorical | boolean
+  count     Int     @default(0)
+  min       Float?
+  max       Float?
+  mean      Float?
+  stddev    Float?
+  p01       Float?
+  p25       Float?
+  p50       Float?
+  p75       Float?
+  p99       Float?
+  buckets   Json?   // HistogramBucket[]
+  categories Json?  // CategoryCount[] (categorical/boolean)
+  updatedAt DateTime @updatedAt
+
+  @@map("spec_stats")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String   @default("client") // admin | client
+  createdAt    DateTime @default(now())
+
+  orders   Order[]
+  messages ChatMessage[]
+
+  @@map("users")
+}
+
+model Order {
+  id             Int      @id @default(autoincrement())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         Int
+  status         String   @default("pending") // pending | paid | failed
+  totalArs       Float
+  mpPreferenceId String?
+  mpPaymentId    String?
+  initPoint      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id           Int     @id @default(autoincrement())
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      Int
+  product      Product @relation(fields: [productId], references: [id])
+  productId    Int
+  brand        String
+  model        String
+  quantity     Int     @default(1)
+  unitPriceArs Float
+
+  @@map("order_items")
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  role      String   // user | assistant
+  content   String
+  createdAt DateTime @default(now())
+
+  @@map("chat_messages")
+}

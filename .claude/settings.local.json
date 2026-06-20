@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm -v)",
+      "Bash(echo \"npm: $\\(npm -v 2>/dev/null\\)\")",
+      "Bash(pnpm -v)",
+      "Bash(echo \"pnpm: $\\(pnpm -v 2>/dev/null\\)\")",
+      "Bash(docker -v)",
+      "Bash(corepack enable *)",
+      "Bash(corepack prepare *)",
+      "Bash(npm install *)",
+      "Bash(npx vite *)",
+      "Bash(node -e \"console.log\\('JWT_SECRET suggestion:', require\\('crypto'\\).randomBytes\\(32\\).toString\\('hex'\\)\\)\")",
+      "PowerShell(npm run build --workspace apps/web 2>&1)"
+    ]
+  }
+}
