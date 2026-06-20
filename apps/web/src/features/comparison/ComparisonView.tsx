@@ -120,9 +120,9 @@ export function ComparisonView({ ids, managed = false }: { ids: number[]; manage
             onClick={() => setWindowStart((s) => Math.max(0, s - 1))}
             disabled={start === 0}
             aria-label="Celulares anteriores"
-            className="absolute -left-1 top-20 z-10 rounded-full border border-slate-300 bg-white/95 p-1.5 text-slate-700 shadow disabled:opacity-30"
+            className="fixed left-1 top-1/2 z-30 -translate-y-1/2 rounded-full border border-slate-300 bg-white/95 p-2 text-slate-700 shadow-lg backdrop-blur transition disabled:opacity-30"
           >
-            <ChevronLeft size={18} />
+            <ChevronLeft size={20} />
           </button>
         )}
         {showPager && (
@@ -130,9 +130,9 @@ export function ComparisonView({ ids, managed = false }: { ids: number[]; manage
             onClick={() => setWindowStart((s) => Math.min(maxStart, s + 1))}
             disabled={start >= maxStart}
             aria-label="Celulares siguientes"
-            className="absolute -right-1 top-20 z-10 rounded-full border border-slate-300 bg-white/95 p-1.5 text-slate-700 shadow disabled:opacity-30"
+            className="fixed right-1 top-1/2 z-30 -translate-y-1/2 rounded-full border border-slate-300 bg-white/95 p-2 text-slate-700 shadow-lg backdrop-blur transition disabled:opacity-30"
           >
-            <ChevronRight size={18} />
+            <ChevronRight size={20} />
           </button>
         )}
         <div
