@@ -15,8 +15,10 @@ import { AccountPage } from '@/pages/AccountPage';
 import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { AdminPage } from '@/pages/admin/AdminPage';
+import { AboutPage } from '@/pages/AboutPage';
 import { FloatingCompareBar } from '@/features/comparison/FloatingCompareBar';
 import { ChatWidget } from '@/features/ai/ChatWidget';
+import { Footer } from '@/components/Footer';
 
 function RequireAdmin({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -42,6 +44,7 @@ export default function App() {
           <Route path="/catalog" element={<CatalogPage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/compare" element={<ComparePage />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout/result" element={<CheckoutResultPage />} />
           <Route path="/orders" element={<RequireAuth><OrdersPage /></RequireAuth>} />
@@ -52,6 +55,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+      <Footer />
       <FloatingCompareBar />
       <ChatWidget />
     </div>

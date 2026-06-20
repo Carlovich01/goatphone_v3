@@ -17,13 +17,22 @@ export function HomePage() {
   return (
     <div className="space-y-10">
       <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-brand/20 via-white to-white p-8 sm:p-12">
-        <h1 className="text-3xl font-extrabold sm:text-5xl">
-          Elegí el celular <span className="text-brand-dark">GOAT</span>
-        </h1>
-        <p className="mt-3 max-w-2xl text-slate-600">
-          Compará especificaciones con puntajes objetivos, gráficos interactivos y un asistente con
-          IA. Encontrá el mejor teléfono según su rendimiento, cámara, batería y precio.
-        </p>
+        <div className="flex items-center justify-between gap-8">
+          <div className="flex-1">
+            <h1 className="text-3xl font-extrabold sm:text-5xl">
+              Elegí el celular <span className="text-brand-dark">GOAT</span>
+            </h1>
+            <p className="mt-3 max-w-2xl text-slate-600">
+              Compará especificaciones con puntajes objetivos, gráficos interactivos y un asistente con
+              IA. Encontrá el mejor teléfono según su rendimiento, cámara, batería y precio.
+            </p>
+          </div>
+          <img
+            src="/logo.png"
+            alt="GoatPhone"
+            className="hidden w-36 sm:block sm:w-44 lg:w-52 drop-shadow-xl"
+          />
+        </div>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link to="/catalog">
             <Button variant="primary">Ver catálogo</Button>

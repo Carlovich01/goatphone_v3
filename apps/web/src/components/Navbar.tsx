@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, GitCompare, LogOut, Shield, Smartphone } from 'lucide-react';
+import { ShoppingCart, GitCompare, LogOut, Shield } from 'lucide-react';
 import { useAuth } from '@/store/auth';
 import { useCart } from '@/store/cart';
 import { useCompare } from '@/store/compare';
@@ -14,14 +14,18 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/95 text-white backdrop-blur">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3">
-        <Link to="/" className="flex items-center gap-2 text-lg font-extrabold tracking-tight text-white">
-          <Smartphone className="text-brand-light" size={22} />
-          GOAT<span className="text-brand-light">PHONE</span>
+        <Link to="/" className="flex items-center gap-2">
+          <img src="/logo.png" alt="GoatPhone" className="h-9 w-9 rounded-lg object-contain" />
+          <span className="text-lg font-extrabold tracking-tight"><span className="text-brand-light">GOAT</span><span className="text-white">PHONE</span></span>
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link to="/catalog">
             <Button variant="nav">Catálogo</Button>
+          </Link>
+
+          <Link to="/about">
+            <Button variant="nav">Nosotros</Button>
           </Link>
 
           <Link to="/compare" className="relative">
