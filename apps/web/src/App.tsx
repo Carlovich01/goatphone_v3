@@ -36,9 +36,9 @@ function RequireAuth({ children }: { children: ReactNode }) {
 
 export default function App() {
   return (
-    <div className="min-h-screen">
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/catalog" element={<CatalogPage />} />

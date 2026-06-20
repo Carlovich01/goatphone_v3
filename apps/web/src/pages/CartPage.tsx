@@ -102,7 +102,7 @@ export function CartPage() {
             <CheckCircle2 className="mx-auto mb-3 text-green-600" size={64} />
             <h2 className="text-2xl font-bold text-green-700">¡Pago exitoso!</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Tu compra fue registrada y el stock actualizado.
+              Tu compra fue registrada.
             </p>
             <div className="mt-5 flex justify-center gap-2">
               <Link to="/orders">

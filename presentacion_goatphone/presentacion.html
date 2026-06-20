@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoatPhone — Presentación del Sistema</title>
+<link rel="icon" type="image/png" href="../logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --brand:#7c3aed;--brand-dark:#5b21b6;--brand-light:#a78bfa;
+    --bg:#0f0d1a;--surface:#1a1726;--surface2:#241f33;
+    --text:#e2e0ea;--text-muted:#9891a8;
+    --slide-w:100vw;--slide-h:100vh;
+    --radius:16px;
+  }
+  html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden}
+
+  /* ── Slide System ── */
+  .slide{
+    width:var(--slide-w);min-height:var(--slide-h);
+    scroll-snap-align:start;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:3rem 2rem;position:relative;
+  }
+  .slide::after{
+    content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;
+    background:linear-gradient(90deg,transparent,var(--brand-light),transparent);
+  }
+
+  /* ── Cover slide ── */
+  .cover{background:radial-gradient(ellipse at 50% 30%,rgba(124,58,237,.18) 0%,transparent 70%)}
+  .cover .logo{width:180px;margin-bottom:1.5rem;filter:drop-shadow(0 0 40px rgba(124,58,237,.5));animation:float 4s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+  .cover h1{font-size:clamp(2rem,5vw,4rem);font-weight:900;letter-spacing:-1px;text-align:center}
+  .cover h1 span{color:var(--brand-light)}
+  .cover .subtitle{color:var(--text-muted);font-size:1.15rem;margin-top:.75rem;text-align:center;max-width:600px}
+  .cover .team{margin-top:2.5rem;display:flex;flex-wrap:wrap;gap:1rem;justify-content:center}
+  .cover .team .member{
+    background:var(--surface);border:1px solid rgba(124,58,237,.3);border-radius:var(--radius);
+    padding:1rem 1.5rem;text-align:center;min-width:220px;
+    transition:transform .25s,border-color .25s;
+  }
+  .cover .team .member:hover{transform:translateY(-4px);border-color:var(--brand-light)}
+  .cover .team .avatar{
+    width:52px;height:52px;border-radius:50%;margin:0 auto .6rem;
+    display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--brand),var(--brand-dark));
+    font-weight:800;font-size:1.25rem;color:#fff;
+  }
+  .cover .team .name{font-weight:600;font-size:.95rem}
+  .cover .team .role{color:var(--brand-light);font-size:.8rem;margin-top:.2rem}
+  .cover .materia{margin-top:2rem;color:var(--text-muted);font-size:.95rem;text-align:center;line-height:1.6}
+
+  /* ── Content slides ── */
+  .content-slide{gap:1.5rem}
+  .slide-number{
+    position:absolute;top:1.5rem;right:2rem;font-size:.85rem;font-weight:700;
+    color:var(--brand-light);opacity:.7;
+  }
+  .content-slide h2{
+    font-size:clamp(1.4rem,3vw,2rem);font-weight:800;text-align:center;
+    background:linear-gradient(135deg,#fff,var(--brand-light));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .content-slide .description{
+    max-width:900px;text-align:center;color:var(--text-muted);
+    font-size:1rem;line-height:1.65;
+  }
+  .content-slide .screenshot{
+    max-width:min(1100px,90vw);max-height:60vh;border-radius:var(--radius);
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 80px rgba(124,58,237,.08);
+    transition:transform .35s;cursor:zoom-in;
+  }
+  .content-slide .screenshot:hover{transform:scale(1.02)}
+  .content-slide .tags{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+  .tag{
+    padding:.3rem .75rem;border-radius:999px;font-size:.75rem;font-weight:600;
+    background:var(--surface2);border:1px solid rgba(124,58,237,.25);color:var(--brand-light);
+  }
+
+  /* ── Summary slide ── */
+  .summary{background:radial-gradient(ellipse at 50% 80%,rgba(124,58,237,.12) 0%,transparent 60%)}
+  .summary h2{font-size:clamp(1.6rem,4vw,2.5rem);font-weight:900;text-align:center;margin-bottom:2rem;
+    background:linear-gradient(135deg,#fff,var(--brand-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .best-practices{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:1.25rem;max-width:1100px;width:100%;
+  }
+  .bp-card{
+    background:var(--surface);border:1px solid rgba(124,58,237,.2);border-radius:var(--radius);
+    padding:1.5rem;transition:transform .25s,border-color .25s;
+  }
+  .bp-card:hover{transform:translateY(-4px);border-color:var(--brand-light)}
+  .bp-card .bp-icon{font-size:1.6rem;margin-bottom:.5rem}
+  .bp-card h3{font-size:1rem;font-weight:700;margin-bottom:.4rem}
+  .bp-card p{font-size:.88rem;color:var(--text-muted);line-height:1.55}
+
+  /* ── Navigation ── */
+  .nav-dots{
+    position:fixed;right:1rem;top:50%;transform:translateY(-50%);
+    display:flex;flex-direction:column;gap:.5rem;z-index:100;
+  }
+  .nav-dots a{
+    width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.2);
+    display:block;transition:background .2s,transform .2s;
+  }
+  .nav-dots a:hover,.nav-dots a.active{background:var(--brand-light);transform:scale(1.3)}
+
+  /* ── Progress bar ── */
+  .progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--brand),var(--brand-light));z-index:200;width:0;transition:width .15s}
+
+  /* ── Keyboard hint ── */
+  .hint{
+    position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+    background:var(--surface);border:1px solid rgba(255,255,255,.1);border-radius:999px;
+    padding:.4rem 1.2rem;font-size:.75rem;color:var(--text-muted);z-index:100;
+    animation:fadeHint 6s forwards;pointer-events:none;
+  }
+  @keyframes fadeHint{0%,70%{opacity:1}100%{opacity:0}}
+
+  /* ── Lightbox ── */
+  .lightbox{
+    position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;
+    display:none;align-items:center;justify-content:center;cursor:zoom-out;
+  }
+  .lightbox.active{display:flex}
+  .lightbox img{max-width:95vw;max-height:95vh;border-radius:8px}
+
+  /* ── Final slide ── */
+  .final{text-align:center}
+  .final h2{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;margin-bottom:1rem;
+    background:linear-gradient(135deg,#fff,var(--brand-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .final p{color:var(--text-muted);font-size:1.1rem;max-width:600px;margin:0 auto}
+  .final .logo{width:120px;margin-bottom:1.5rem;filter:drop-shadow(0 0 30px rgba(124,58,237,.4))}
+
+  @media(max-width:640px){
+    .slide{padding:2rem 1rem}
+    .cover .team{flex-direction:column;align-items:center}
+    .best-practices{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div class="progress" id="progress"></div>
+
+<!-- Navigation dots -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- Keyboard hint -->
+<div class="hint">Usá las flechas ↑ ↓ o scroll para navegar · Click en la imagen para ampliar</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('active')">
+  <img id="lbImg" src="" alt="Zoom">
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║                SLIDE 0 — PORTADA                      ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<section class="slide cover" id="s0">
+  <img src="../logo.png" alt="GoatPhone" class="logo">
+  <h1><span>GOAT</span>PHONE</h1>
+  <p class="subtitle">Compará. Decidí. Elegí mejor.<br>Plataforma de comparación y venta de smartphones con IA.</p>
+  <div class="team">
+    <div class="member">
+      <div class="avatar">D</div>
+      <div class="name">Díaz Severich Carlos Emanuel</div>
+      <div class="role">Desarrollador</div>
+    </div>
+    <div class="member">
+      <div class="avatar">F</div>
+      <div class="name">Fernández Nelson Isaías</div>
+      <div class="role">Desarrollador</div>
+    </div>
+    <div class="member">
+      <div class="avatar">G</div>
+      <div class="name">Gianello Ramiro Valentín</div>
+      <div class="role">Desarrollador</div>
+    </div>
+  </div>
+  <p class="materia"><strong>Electiva I: Servicios Web y Comercio Electrónico</strong><br>Carrera: Ingeniería en Sistemas de Información<br>Departamento Académico de Ciencias Exactas, Físicas y Naturales<br>Universidad Nacional de La Rioja — 2026</p>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║         SLIDES 1–28 — CAPTURAS DE PANTALLA            ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+
+<!-- Slide 1 -->
+<section class="slide content-slide" id="s1">
+  <span class="slide-number">01 / 30</span>
+  <h2>Pantalla de Inicio</h2>
+  <p class="description">
+    Landing principal de GoatPhone. Presenta el eslogan «Elegí el celular GOAT» junto al logo y tres pilares del sistema:
+    <strong>Comparación inteligente</strong> con puntajes por especificación, <strong>Resumen con IA</strong> que genera análisis automáticos,
+    y <strong>Pago seguro</strong> integrado con Mercado Pago. Debajo se listan los celulares top según puntaje GOAT.
+  </p>
+  <img class="screenshot" src="1. pantalla-inicio.png" alt="Pantalla de inicio" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Landing Page</span><span class="tag">Hero Section</span><span class="tag">CTA</span><span class="tag">UX</span></div>
+</section>
+
+<!-- Slide 1.1 -->
+<section class="slide content-slide" id="s1b">
+  <span class="slide-number">02 / 30</span>
+  <h2>Sobre Nosotros</h2>
+  <p class="description">
+    Sección institucional que muestra al equipo de desarrollo con tarjetas individuales.
+    Incluye canales de contacto (correo, Instagram, WhatsApp) y la ubicación física con mapa interactivo de Google Maps
+    apuntando a la Universidad Nacional de La Rioja.
+  </p>
+  <img class="screenshot" src="1.1. Sobre Nosotros.png" alt="Sobre Nosotros" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Equipo</span><span class="tag">Contacto</span><span class="tag">Geolocalización</span></div>
+</section>
+
+<!-- Slide 2 -->
+<section class="slide content-slide" id="s2">
+  <span class="slide-number">03 / 30</span>
+  <h2>Catálogo de Celulares</h2>
+  <p class="description">
+    Vista de catálogo con filtros avanzados: búsqueda por texto, marca, precio máximo, RAM, almacenamiento, ofertas, 5G y ordenamiento.
+    Cada tarjeta muestra imagen, especificaciones clave, precio (con descuento si aplica), puntaje GOAT
+    y botones de «Comparar» y «Agregar al carrito».
+  </p>
+  <img class="screenshot" src="2. pantalla-catalogo.png" alt="Catálogo" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Catálogo</span><span class="tag">Filtros</span><span class="tag">Ofertas</span><span class="tag">Puntaje GOAT</span></div>
+</section>
+
+<!-- Slide 3 -->
+<section class="slide content-slide" id="s3">
+  <span class="slide-number">04 / 30</span>
+  <h2>Widget de Comparación Flotante</h2>
+  <p class="description">
+    Barra flotante en la esquina inferior izquierda que permite gestionar hasta 4 celulares para comparar.
+    Muestra miniaturas, precios y permite quitar o limpiar la selección. Desde aquí se accede directamente
+    a la vista de comparación completa o al catálogo para agregar más dispositivos.
+  </p>
+  <img class="screenshot" src="3. widget-comparacion-celulares.png" alt="Widget Comparación" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Widget Flotante</span><span class="tag">Comparación</span><span class="tag">UX Interactiva</span></div>
+</section>
+
+<!-- Slide 4 -->
+<section class="slide content-slide" id="s4">
+  <span class="slide-number">05 / 30</span>
+  <h2>Comparación — Análisis IA y Puntaje por Categoría</h2>
+  <p class="description">
+    Pantalla de comparación lado a lado. Muestra el «Ganador» destacado, precios y especificaciones de cada dispositivo.
+    Incluye un <strong>análisis generado por IA</strong> que explica en lenguaje natural cuál celular conviene y por qué,
+    junto a un <strong>gráfico radar</strong> de puntaje por categoría (rendimiento, almacenamiento, batería, pantalla, cámara, conectividad, economía).
+  </p>
+  <img class="screenshot" src="4. pantalla-comparacion-celulares-analisis-IA-y-Puntaje-por-categoria.png" alt="Comparación IA" onclick="zoom(this)">
+  <div class="tags"><span class="tag">IA Generativa</span><span class="tag">Gráfico Radar</span><span class="tag">Puntaje</span><span class="tag">RAG</span></div>
+</section>
+
+<!-- Slide 5 -->
+<section class="slide content-slide" id="s5">
+  <span class="slide-number">06 / 30</span>
+  <h2>Comparación — Tabla de Especificaciones</h2>
+  <p class="description">
+    Despliegue completo de especificaciones técnicas organizadas por categoría (Rendimiento, Almacenamiento, Batería, etc.).
+    Cada fila muestra los valores de cada celular con códigos de color por dispositivo. Se incluye un
+    botón de gráfico estadístico por cada especificación para visualizar cómo se ubica cada celular respecto al catálogo completo.
+  </p>
+  <img class="screenshot" src="5. pantalla-comparacion-de-celulares-columna-especificaciones.png" alt="Especificaciones" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Especificaciones</span><span class="tag">Tabla Comparativa</span><span class="tag">Detalle Técnico</span></div>
+</section>
+
+<!-- Slide 6 -->
+<section class="slide content-slide" id="s6">
+  <span class="slide-number">07 / 30</span>
+  <h2>Gráfico Estadístico por Especificación</h2>
+  <p class="description">
+    Modal interactivo que muestra un histograma con la distribución de todos los celulares del catálogo para una especificación
+    (ej. capacidad de batería). Resalta dónde se ubica cada celular comparado, muestra media, mediana y moda,
+    y lista celulares similares en el rango seleccionado con sus precios.
+  </p>
+  <img class="screenshot" src="6. pantalla-comparacion-de-celulares-grafico-estadistico-por-cada-especificacion.png" alt="Gráfico Estadístico" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Histograma</span><span class="tag">Estadísticas</span><span class="tag">Análisis de Datos</span><span class="tag">Interactivo</span></div>
+</section>
+
+<!-- Slide 7 -->
+<section class="slide content-slide" id="s7">
+  <span class="slide-number">08 / 30</span>
+  <h2>Chat de IA — Asistente GOATPHONE</h2>
+  <p class="description">
+    Widget de chat flotante con inteligencia artificial. El asistente responde preguntas sobre los celulares comparados,
+    sugiere alternativas en stock, analiza relación precio-rendimiento y da recomendaciones personalizadas.
+    Utiliza RAG (Retrieval-Augmented Generation) con los datos del catálogo en tiempo real.
+  </p>
+  <img class="screenshot" src="7. comparacion-de-celulares-chat-de-ia-widget.png" alt="Chat IA" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Chatbot IA</span><span class="tag">RAG</span><span class="tag">Recomendaciones</span><span class="tag">NLP</span></div>
+</section>
+
+<!-- Slide 8 -->
+<section class="slide content-slide" id="s8">
+  <span class="slide-number">09 / 30</span>
+  <h2>Mi Cuenta — Perfil de Usuario</h2>
+  <p class="description">
+    Pantalla de perfil donde el usuario completa sus datos personales requeridos para el checkout:
+    DNI, teléfono y dirección de envío. Estos datos se validan antes de permitir la compra
+    y se envían junto a la orden a Mercado Pago y al panel de administración.
+  </p>
+  <img class="screenshot" src="8. Mi-cuenta.png" alt="Mi Cuenta" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Perfil</span><span class="tag">Datos Personales</span><span class="tag">Validación</span></div>
+</section>
+
+<!-- Slide 9 -->
+<section class="slide content-slide" id="s9">
+  <span class="slide-number">10 / 30</span>
+  <h2>Carrito de Compras</h2>
+  <p class="description">
+    Vista del carrito con los productos seleccionados, cantidades editables y resumen de compra.
+    Permite elegir método de entrega: <strong>Retiro en local</strong> o <strong>Envío a domicilio</strong>.
+    Muestra subtotal y total, y el botón «Pagar con Mercado Pago» inicia el flujo de checkout.
+    El footer se mantiene siempre anclado al fondo de la página.
+  </p>
+  <img class="screenshot" src="9. Carrito-de-compras.png" alt="Carrito" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Carrito</span><span class="tag">Checkout</span><span class="tag">Envío</span><span class="tag">Mercado Pago</span></div>
+</section>
+
+<!-- Slide 10 -->
+<section class="slide content-slide" id="s10">
+  <span class="slide-number">11 / 30</span>
+  <h2>Mercado Pago — Selección de Medio de Pago</h2>
+  <p class="description">
+    Integración directa con el checkout de Mercado Pago. El usuario selecciona su medio de pago
+    (tarjeta de crédito, débito, etc.), elige cuotas y ve el desglose del pago.
+    Se abre en una nueva pestaña mientras GoatPhone monitorea el estado del pago en tiempo real.
+  </p>
+  <img class="screenshot" src="10. Mercado-Pago-1.png" alt="Mercado Pago 1" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Mercado Pago</span><span class="tag">Pasarela de Pago</span><span class="tag">Seguridad</span></div>
+</section>
+
+<!-- Slide 11 -->
+<section class="slide content-slide" id="s11">
+  <span class="slide-number">12 / 30</span>
+  <h2>Mercado Pago — Confirmación de Pago</h2>
+  <p class="description">
+    Pantalla de Mercado Pago confirmando que el pago fue acreditado exitosamente.
+    Muestra el número de operación, monto pagado, medio utilizado y comprobante.
+    El webhook de MP notifica automáticamente al backend de GoatPhone para actualizar el estado de la orden.
+  </p>
+  <img class="screenshot" src="11. Mercado-Pago-2.png" alt="Mercado Pago 2" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Confirmación</span><span class="tag">Webhook</span><span class="tag">Transacción Segura</span></div>
+</section>
+
+<!-- Slide 12 -->
+<section class="slide content-slide" id="s12">
+  <span class="slide-number">13 / 30</span>
+  <h2>Pago Exitoso — Modal de Confirmación</h2>
+  <p class="description">
+    Modal en la aplicación GoatPhone que confirma al usuario que su pago fue procesado correctamente.
+    El sistema detecta automáticamente mediante polling el cambio de estado de la orden
+    y muestra esta notificación sin necesidad de recargar la página. Ofrece acceso directo a «Mis compras».
+  </p>
+  <img class="screenshot" src="12. Pago-Exitoso.png" alt="Pago Exitoso" onclick="zoom(this)">
+  <div class="tags"><span class="tag">UX Feedback</span><span class="tag">Polling</span><span class="tag">Estado en Tiempo Real</span></div>
+</section>
+
+<!-- Slide 13 -->
+<section class="slide content-slide" id="s13">
+  <span class="slide-number">14 / 30</span>
+  <h2>Mis Compras — Historial de Órdenes</h2>
+  <p class="description">
+    Vista del historial completo de compras del usuario. Cada orden muestra: número, fecha, método de entrega,
+    datos del cliente, productos, total y un <strong>pipeline de estados</strong> visual
+    (Pago recibido → Preparando → En manos del cartero → Entregado). También muestra si se aceptó un reclamo de garantía.
+  </p>
+  <img class="screenshot" src="13. Mis-Compras.png" alt="Mis Compras" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Historial</span><span class="tag">Tracking</span><span class="tag">Pipeline Visual</span><span class="tag">Garantía</span></div>
+</section>
+
+<!-- Slide 14 -->
+<section class="slide content-slide" id="s14">
+  <span class="slide-number">15 / 30</span>
+  <h2>Panel de Administración — Agregar Celular</h2>
+  <p class="description">
+    Panel de administración con buscador integrado que consulta una base de datos de especificaciones técnicas.
+    El admin busca un modelo, ve resultados con marca, RAM, batería y cámara, y con un click agrega el celular
+    al catálogo. El sistema completa automáticamente todas las especificaciones y calcula el puntaje GOAT.
+  </p>
+  <img class="screenshot" src="14. Panel de administracion agregar celular al catalogo.png" alt="Admin Agregar" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Admin</span><span class="tag">CRUD</span><span class="tag">Scraping</span><span class="tag">Auto-scoring</span></div>
+</section>
+
+<!-- Slide 15 -->
+<section class="slide content-slide" id="s15">
+  <span class="slide-number">16 / 30</span>
+  <h2>Panel de Administración — Catálogo Actual</h2>
+  <p class="description">
+    Lista de todos los celulares en el catálogo con controles para activar/desactivar productos,
+    editar precios, gestionar ofertas y eliminar modelos. Proporciona una vista rápida del inventario
+    completo con estado de stock y visibilidad en la tienda.
+  </p>
+  <img class="screenshot" src="15 Panel de administracion - catalogo actual.png" alt="Admin Catálogo" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Gestión</span><span class="tag">Inventario</span><span class="tag">Admin Panel</span></div>
+</section>
+
+<!-- Slide 16 -->
+<section class="slide content-slide" id="s16">
+  <span class="slide-number">17 / 30</span>
+  <h2>Panel de Administración — Órdenes de Compra</h2>
+  <p class="description">
+    Gestión completa de órdenes desde el panel admin. El administrador puede ver todas las compras,
+    actualizar el estado de envío paso a paso (preparando, en camino, entregado),
+    gestionar reclamos de garantía y ver los datos completos del comprador.
+  </p>
+  <img class="screenshot" src="16. Panel de administracion de ordenes de compra.png" alt="Admin Órdenes" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Órdenes</span><span class="tag">Logística</span><span class="tag">Estado de Envío</span></div>
+</section>
+
+<!-- Slide 17 -->
+<section class="slide content-slide" id="s17">
+  <span class="slide-number">18 / 30</span>
+  <h2>Reclamo de Garantía — Vista del Cliente</h2>
+  <p class="description">
+    Una vez que el producto es entregado, el cliente tiene la opción de iniciar un reclamo de garantía.
+    Esta funcionalidad permite al usuario describir el problema y enviar el reclamo,
+    que será gestionado por el administrador desde su panel.
+  </p>
+  <img class="screenshot" src="17. Luego de Entregado el producto al cliente tiene la posibilidad de reclamar garantia.png" alt="Reclamo Garantía" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Postventa</span><span class="tag">Garantía</span><span class="tag">Soporte al Cliente</span></div>
+</section>
+
+<!-- Slide 18 -->
+<section class="slide content-slide" id="s18">
+  <span class="slide-number">19 / 30</span>
+  <h2>Panel de Administración — Gestión de Reclamos</h2>
+  <p class="description">
+    El administrador recibe los reclamos de garantía y puede aceptarlos o rechazarlos.
+    Cada acción dispara una notificación por email al cliente informando la resolución.
+    Se mantiene un registro completo de cada reclamo y su resultado.
+  </p>
+  <img class="screenshot" src="18. Panel de Administracion Reclamo.png" alt="Admin Reclamo" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Reclamos</span><span class="tag">Resolución</span><span class="tag">Workflow</span></div>
+</section>
+
+<!-- Slide 19 -->
+<section class="slide content-slide" id="s19">
+  <span class="slide-number">20 / 30</span>
+  <h2>Notificación Email — Nueva Compra (Admin)</h2>
+  <p class="description">
+    Email automático enviado al administrador cuando se realiza una nueva compra.
+    Contiene todos los detalles de la orden: producto, precio, datos del comprador, método de entrega y dirección.
+    Automatizado mediante n8n + Gmail para notificaciones en tiempo real.
+  </p>
+  <img class="screenshot" src="19. Notificaciones gmail al admin nueva compra.png" alt="Email Admin Compra" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Email</span><span class="tag">n8n</span><span class="tag">Automatización</span><span class="tag">Webhook</span></div>
+</section>
+
+<!-- Slide 20 -->
+<section class="slide content-slide" id="s20">
+  <span class="slide-number">21 / 30</span>
+  <h2>Notificación Email — Ofertas a Clientes</h2>
+  <p class="description">
+    Emails de marketing enviados a los clientes con las ofertas vigentes del catálogo.
+    Incluye imágenes de productos, precios con descuento y call-to-action directos a la tienda.
+    Diseño responsive con branding consistente de GoatPhone.
+  </p>
+  <img class="screenshot" src="20. Notificaciones gmail a los clientes ofertas.png" alt="Email Ofertas" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Email Marketing</span><span class="tag">Ofertas</span><span class="tag">CTA</span></div>
+</section>
+
+<!-- Slide 21 -->
+<section class="slide content-slide" id="s21">
+  <span class="slide-number">22 / 30</span>
+  <h2>Notificación Email — Compra Exitosa (Cliente)</h2>
+  <p class="description">
+    Confirmación de compra enviada al cliente después de que el pago es acreditado.
+    Detalla el producto comprado, monto pagado, método de entrega seleccionado
+    y un enlace para hacer seguimiento de la orden en «Mis compras».
+  </p>
+  <img class="screenshot" src="21. Notificaciones gmail al cliente compra exitosa.png" alt="Email Compra" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Confirmación</span><span class="tag">Email Transaccional</span></div>
+</section>
+
+<!-- Slide 22 -->
+<section class="slide content-slide" id="s22">
+  <span class="slide-number">23 / 30</span>
+  <h2>Notificación Email — Preparando Envío</h2>
+  <p class="description">
+    Notificación automática al cliente cuando el administrador marca la orden como «Preparando para el envío».
+    Mantiene al comprador informado en cada etapa del proceso logístico,
+    mejorando la transparencia y confianza en el servicio.
+  </p>
+  <img class="screenshot" src="22. Notificaciones gmail al cliente preparando para el envio.png" alt="Email Preparando" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Tracking</span><span class="tag">Logística</span><span class="tag">Notificación</span></div>
+</section>
+
+<!-- Slide 23 -->
+<section class="slide content-slide" id="s23">
+  <span class="slide-number">24 / 30</span>
+  <h2>Notificación Email — En Manos del Cartero</h2>
+  <p class="description">
+    Email que notifica al cliente que su pedido está en camino, en manos del servicio de entrega.
+    Cada cambio de estado en el pipeline de la orden genera automáticamente un email personalizado.
+  </p>
+  <img class="screenshot" src="23. Notificaciones gmail al cliente en manos del cartero.png" alt="Email En Camino" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Delivery</span><span class="tag">Última Milla</span><span class="tag">Automatización</span></div>
+</section>
+
+<!-- Slide 24 -->
+<section class="slide content-slide" id="s24">
+  <span class="slide-number">25 / 30</span>
+  <h2>Notificación Email — Producto Entregado</h2>
+  <p class="description">
+    Confirmación final de entrega enviada al cliente. Cierra el ciclo logístico e informa que,
+    a partir de este momento, el cliente puede iniciar un reclamo de garantía si lo necesita.
+  </p>
+  <img class="screenshot" src="24. Notificaciones gmail al cliente entregado.png" alt="Email Entregado" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Entrega</span><span class="tag">Cierre de Ciclo</span><span class="tag">Postventa</span></div>
+</section>
+
+<!-- Slide 25 -->
+<section class="slide content-slide" id="s25">
+  <span class="slide-number">26 / 30</span>
+  <h2>Notificación Email — Reclamo de Garantía (Admin)</h2>
+  <p class="description">
+    Email automático enviado al administrador cuando un cliente inicia un reclamo de garantía.
+    Incluye los datos del cliente, la orden afectada y el motivo del reclamo para su evaluación.
+  </p>
+  <img class="screenshot" src="25. Notificaciones gmail al admin reclamo de garantia.png" alt="Email Reclamo Admin" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Garantía</span><span class="tag">Alerta Admin</span><span class="tag">Workflow</span></div>
+</section>
+
+<!-- Slide 26 -->
+<section class="slide content-slide" id="s26">
+  <span class="slide-number">27 / 30</span>
+  <h2>Notificación Email — Garantía Rechazada</h2>
+  <p class="description">
+    Respuesta automática al cliente informando que su reclamo de garantía fue evaluado y rechazado.
+    Se incluyen los motivos y se cierra el caso en el sistema.
+    También existe la notificación equivalente para garantía aceptada.
+  </p>
+  <img class="screenshot" src="26. Notificaciones gmail al cliente garantia rechazada.png" alt="Email Garantía Rechazada" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Resolución</span><span class="tag">Postventa</span><span class="tag">Email</span></div>
+</section>
+
+<!-- Slide 27 -->
+<section class="slide content-slide" id="s27">
+  <span class="slide-number">28 / 30</span>
+  <h2>Instagram — @goat.phone1</h2>
+  <p class="description">
+    Presencia en redes sociales con cuenta oficial de Instagram. Canal de comunicación directa con los clientes,
+    publicación de ofertas, novedades del catálogo y contenido relacionado con tecnología móvil.
+    Integrado en el footer y la página de contacto de la aplicación web.
+  </p>
+  <img class="screenshot" src="27. Instagram Goatphone.png" alt="Instagram" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Redes Sociales</span><span class="tag">Instagram</span><span class="tag">Marketing Digital</span></div>
+</section>
+
+<!-- Slide 28 -->
+<section class="slide content-slide" id="s28">
+  <span class="slide-number">29 / 30</span>
+  <h2>WhatsApp — Atención al Cliente</h2>
+  <p class="description">
+    Canal de WhatsApp Business para atención directa y personalizada.
+    Los clientes pueden consultar sobre productos, envíos y soporte técnico.
+    Accesible desde el footer y la sección de contacto con acceso directo vía link wa.me.
+  </p>
+  <img class="screenshot" src="28. Whatsapp Goatphone.png" alt="WhatsApp" onclick="zoom(this)">
+  <div class="tags"><span class="tag">WhatsApp</span><span class="tag">Atención al Cliente</span><span class="tag">Omnicanalidad</span></div>
+</section>
+
+<!-- Slide 29 -->
+<section class="slide content-slide" id="s29">
+  <span class="slide-number">30 / 30</span>
+  <h2>Diseño Responsive — Dispositivos Móviles</h2>
+  <p class="description">
+    El sistema se adapta completamente a pantallas de dispositivos móviles. La vista de comparación reorganiza
+    las tarjetas de productos en un carrusel deslizable, el análisis de IA se muestra en formato vertical
+    y todos los componentes (navbar, botones flotantes, gráficos) se redimensionan para ofrecer
+    una experiencia óptima en cualquier resolución.
+  </p>
+  <img class="screenshot" src="29. Diseño responsive a dispositivos moviles.png" alt="Diseño Responsive" onclick="zoom(this)">
+  <div class="tags"><span class="tag">Responsive</span><span class="tag">Mobile First</span><span class="tag">Adaptabilidad</span><span class="tag">UX Móvil</span></div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║          RESUMEN MEJORES PRÁCTICAS                     ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<section class="slide summary" id="s30">
+  <h2>Mejores Prácticas de Servicios Web y Comercio Electrónico</h2>
+  <div class="best-practices">
+
+    <div class="bp-card">
+      <div class="bp-icon">🏗️</div>
+      <h3>Arquitectura Monorepo</h3>
+      <p>Proyecto organizado con estructura de monorepo (apps/web + apps/api + packages/shared) que permite compartir tipos y lógica entre frontend y backend, manteniendo una fuente única de verdad.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">🔐</div>
+      <h3>Autenticación y Autorización</h3>
+      <p>Sistema de registro/login con JWT, roles diferenciados (usuario/admin), rutas protegidas con guards en frontend y middleware de autorización en el backend.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">💳</div>
+      <h3>Pasarela de Pago Integrada</h3>
+      <p>Checkout con Mercado Pago SDK (sandbox). Generación de preferencias de pago, redirección segura, webhooks para confirmación automática y polling en tiempo real del estado de la orden.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">🤖</div>
+      <h3>Inteligencia Artificial (RAG)</h3>
+      <p>Asistente con IA usando Retrieval-Augmented Generation: combina datos del catálogo en tiempo real con un LLM para generar análisis, comparaciones y recomendaciones personalizadas.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">📊</div>
+      <h3>Visualización de Datos</h3>
+      <p>Gráficos interactivos: radar chart para puntaje por categoría, histogramas estadísticos con media/mediana/moda, barras de progreso y badges de puntuación por especificación.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">📧</div>
+      <h3>Notificaciones Automatizadas</h3>
+      <p>Pipeline de emails transaccionales con n8n + Gmail: confirmación de compra, seguimiento de envío (4 etapas), alertas de garantía y emails de marketing de ofertas.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">📱</div>
+      <h3>Diseño Responsive y UX Premium</h3>
+      <p>Interfaz moderna con Tailwind CSS, widgets flotantes, microinteracciones, glassmorphism, gradientes y dark mode. Totalmente responsive para desktop, tablet y mobile.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">🔄</div>
+      <h3>API RESTful con Validación</h3>
+      <p>Backend Express.js con endpoints RESTful, validación de datos con Zod, manejo de errores centralizado, rate limiting y sanitización de inputs.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">📦</div>
+      <h3>Gestión de Estado y Caché</h3>
+      <p>React Query para caché inteligente de datos del servidor, Context API para estado global (auth, carrito, comparación) y optimistic updates para UX fluida.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">🔍</div>
+      <h3>SEO y Performance</h3>
+      <p>Meta tags, títulos descriptivos, estructura semántica HTML5, lazy loading de imágenes, code splitting con Vite y favicon personalizado con la marca.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">🛡️</div>
+      <h3>Seguridad Web</h3>
+      <p>CORS configurado, cookies HttpOnly para tokens, HTTPS en producción, protección contra CSRF, headers de seguridad y encriptación de contraseñas con bcrypt.</p>
+    </div>
+
+    <div class="bp-card">
+      <div class="bp-icon">📲</div>
+      <h3>Omnicanalidad</h3>
+      <p>Presencia en múltiples canales: web app, Instagram, WhatsApp Business y email. Footer y página de contacto con accesos directos y SVGs de cada plataforma.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ╔══════════════════════════════════════════════════════╗ -->
+<!-- ║                    SLIDE FINAL                        ║ -->
+<!-- ╚══════════════════════════════════════════════════════╝ -->
+<section class="slide final" id="s31">
+  <img src="../logo.png" alt="GoatPhone" class="logo" style="animation:float 4s ease-in-out infinite">
+  <h2>¡Gracias!</h2>
+  <p>GoatPhone — Compará. Decidí. Elegí mejor.</p>
+  <p style="margin-top:1.5rem;font-size:.9rem;color:var(--text-muted)">
+    Díaz Severich · Fernández · Gianello<br>
+    Universidad Nacional de La Rioja — 2026
+  </p>
+</section>
+
+<script>
+// ── Navigation dots ──
+const slides = document.querySelectorAll('.slide');
+const dotsContainer = document.getElementById('navDots');
+slides.forEach((s, i) => {
+  const a = document.createElement('a');
+  a.href = '#' + s.id;
+  a.dataset.index = i;
+  dotsContainer.appendChild(a);
+});
+const dots = dotsContainer.querySelectorAll('a');
+
+// ── Progress bar ──
+const progressBar = document.getElementById('progress');
+function updateProgress() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  progressBar.style.width = pct + '%';
+}
+
+// ── Active dot tracking via IntersectionObserver ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = [...slides].indexOf(e.target);
+      dots.forEach(d => d.classList.remove('active'));
+      if (dots[idx]) dots[idx].classList.add('active');
+    }
+  });
+}, { threshold: 0.4 });
+slides.forEach(s => observer.observe(s));
+
+window.addEventListener('scroll', updateProgress, { passive: true });
+updateProgress();
+
+// ── Keyboard navigation ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+    e.preventDefault();
+    const current = [...slides].findIndex(s => {
+      const r = s.getBoundingClientRect();
+      return r.top >= -10 && r.top < window.innerHeight / 2;
+    });
+    const next = Math.min(current + 1, slides.length - 1);
+    slides[next].scrollIntoView({ behavior: 'smooth' });
+  }
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    const current = [...slides].findIndex(s => {
+      const r = s.getBoundingClientRect();
+      return r.top >= -10 && r.top < window.innerHeight / 2;
+    });
+    const prev = Math.max(current - 1, 0);
+    slides[prev].scrollIntoView({ behavior: 'smooth' });
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('lightbox').classList.remove('active');
+  }
+});
+
+// ── Lightbox ──
+function zoom(img) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lbImg').src = img.src;
+  lb.classList.add('active');
+}
+</script>
+</body>
+</html>
