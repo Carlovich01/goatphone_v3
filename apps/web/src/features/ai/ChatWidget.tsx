@@ -48,7 +48,7 @@ export function ChatWidget() {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 font-medium text-white shadow-lg transition hover:bg-slate-800"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-slate-950 px-5 py-3 font-medium text-white shadow-lg ring-1 ring-white transition hover:bg-slate-800"
       >
         <MessageCircle size={20} className="text-brand-light" /> Chat IA
       </button>
