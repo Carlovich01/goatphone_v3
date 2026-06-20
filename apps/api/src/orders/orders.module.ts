@@ -1,12 +1,27 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { Module } from '@nestjs/common';
-import { IsIn } from 'class-validator';
+import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { OrderStatus } from '@goatphone/shared';
 import { OrdersService } from './orders.service';
 import { CurrentUser, JwtAuthGuard, RequestUser, Roles, RolesGuard } from '../auth/guards';
 
+class WarrantyClaimDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  description?: string;
+}
+
 class UpdateStatusDto {
-  @IsIn(['paid', 'ready_pickup', 'preparing', 'shipped', 'delivered'])
+  @IsIn([
+    'paid',
+    'ready_pickup',
+    'preparing',
+    'shipped',
+    'delivered',
+    'warranty_accepted',
+    'warranty_rejected',
+  ])
   status!: OrderStatus;
 }
 
@@ -32,6 +47,15 @@ class OrdersController {
   @Patch(':id/status')
   updateStatus(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateStatusDto) {
     return this.orders.updateStatus(id, dto.status);
+  }
+
+  @Post(':id/warranty-claim')
+  claimWarranty(
+    @CurrentUser() user: RequestUser,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: WarrantyClaimDto,
+  ) {
+    return this.orders.claimWarranty(id, user.id, dto.description);
   }
 
   @Get(':id')

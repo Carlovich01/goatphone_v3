@@ -1,6 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { DeliveryMethod, Order, OrderStatus, effectivePrice } from '@goatphone/shared';
+import {
+  DeliveryMethod,
+  Order,
+  OrderStatus,
+  WARRANTY_DAYS,
+  canClaimWarranty,
+  effectivePrice,
+} from '@goatphone/shared';
 
 export interface CartItemInput {
   productId: number;
@@ -17,6 +24,12 @@ export class OrdersService {
       status: o.status,
       totalArs: o.totalArs,
       deliveryMethod: o.deliveryMethod,
+      warrantyUntil: o.warrantyUntil
+        ? o.warrantyUntil instanceof Date
+          ? o.warrantyUntil.toISOString()
+          : o.warrantyUntil
+        : null,
+      warrantyClaim: o.warrantyClaim ?? null,
       customerName: o.user?.name ?? null,
       customerEmail: o.user?.email ?? null,
       dni: o.dni ?? null,
@@ -111,6 +124,8 @@ export class OrdersService {
       'preparing',
       'shipped',
       'delivered',
+      'warranty_accepted',
+      'warranty_rejected',
     ];
     if (!allowed.includes(status)) {
       throw new BadRequestException('Estado de orden inválido');
@@ -120,9 +135,47 @@ export class OrdersService {
     if (existing.status === 'pending' || existing.status === 'failed') {
       throw new BadRequestException('La orden todavía no está paga');
     }
+    // warranty resolution is only valid once the client has opened a claim
+    if (
+      (status === 'warranty_accepted' || status === 'warranty_rejected') &&
+      existing.status !== 'warranty_claimed'
+    ) {
+      throw new BadRequestException('No hay un reclamo de garantía para resolver');
+    }
+
+    const data: any = { status };
+    // start the warranty clock when the order is marked delivered
+    if (status === 'delivered' && !existing.warrantyUntil) {
+      data.warrantyUntil = new Date(Date.now() + WARRANTY_DAYS * 24 * 60 * 60 * 1000);
+    }
+
     const order = await this.prisma.order.update({
       where: { id: orderId },
-      data: { status },
+      data,
+      include: { items: true, user: true },
+    });
+    return this.mapOrder(order);
+  }
+
+  /** Client: open a warranty claim (only while under warranty after delivery). */
+  async claimWarranty(orderId: number, userId: number, description?: string): Promise<Order> {
+    const existing = await this.prisma.order.findFirst({
+      where: { id: orderId, userId },
+    });
+    if (!existing) throw new NotFoundException('Orden no encontrada');
+    if (
+      !canClaimWarranty({
+        status: existing.status as OrderStatus,
+        warrantyUntil: existing.warrantyUntil ? existing.warrantyUntil.toISOString() : null,
+      })
+    ) {
+      throw new BadRequestException(
+        'Solo podés reclamar la garantía de una compra entregada y dentro del período de garantía.',
+      );
+    }
+    const order = await this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: 'warranty_claimed', warrantyClaim: description?.trim() || null },
       include: { items: true, user: true },
     });
     return this.mapOrder(order);

@@ -136,8 +136,11 @@ model Order {
   user           User     @relation(fields: [userId], references: [id])
   userId         Int
   // pending | failed | paid | ready_pickup | preparing | shipped | delivered
+  // | warranty_claimed | warranty_accepted | warranty_rejected
   status         String   @default("pending")
   deliveryMethod String   @default("pickup") // pickup | shipping
+  warrantyUntil  DateTime? // end of warranty period (set on delivery)
+  warrantyClaim  String?   // client's claim description
   dni            String?  // snapshot at order time
   phone          String?  // snapshot at order time
   address        String?  // snapshot at order time (shipping)

@@ -8,7 +8,7 @@ import {
   FULFILLMENT_STEPS,
   nextOrderStatus,
 } from '@goatphone/shared';
-import { Store, Truck, ArrowRight } from 'lucide-react';
+import { Store, Truck, ArrowRight, ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button, Card, Spinner, Badge, Select } from '@/components/ui';
 import { formatArs } from '@/lib/format';
@@ -21,13 +21,26 @@ const statusStyle: Record<string, string> = {
   preparing: 'bg-blue-500/20 text-blue-700',
   shipped: 'bg-indigo-500/20 text-indigo-700',
   delivered: 'bg-green-600/20 text-green-800',
+  warranty_claimed: 'bg-orange-500/20 text-orange-700',
+  warranty_accepted: 'bg-green-600/20 text-green-800',
+  warranty_rejected: 'bg-red-500/20 text-red-700',
 };
+
+function Stat({ label, value, accent = 'text-slate-800' }: { label: string; value: string; accent?: string }) {
+  return (
+    <Card className="py-3">
+      <p className="text-xs text-slate-500">{label}</p>
+      <p className={`text-xl font-bold ${accent}`}>{value}</p>
+    </Card>
+  );
+}
 
 function OrderRow({ o, onChange }: { o: Order; onChange: () => void }) {
   const [busy, setBusy] = useState(false);
   const next = nextOrderStatus(o.status, o.deliveryMethod);
-  const fulfillable = o.status !== 'pending' && o.status !== 'failed';
   const steps = FULFILLMENT_STEPS[o.deliveryMethod];
+  const inFulfillment = steps.includes(o.status);
+  const claimOpen = o.status === 'warranty_claimed';
 
   const setStatus = async (status: OrderStatus) => {
     setBusy(true);
@@ -59,13 +72,19 @@ function OrderRow({ o, onChange }: { o: Order; onChange: () => void }) {
         {o.dni && <span>DNI: {o.dni}</span>}
         {o.phone && <span>Tel: {o.phone}</span>}
         {o.deliveryMethod === 'shipping' && o.address && <span>Dirección: {o.address}</span>}
+        {o.warrantyUntil && (
+          <span className="flex items-center gap-1">
+            <ShieldCheck size={13} className="text-green-600" />
+            Garantía hasta {new Date(o.warrantyUntil).toLocaleDateString('es-AR')}
+          </span>
+        )}
       </div>
 
       <p className="mt-2 text-sm text-slate-600">
         {o.items.map((i) => `${i.quantity}× ${i.model}`).join(', ')} — <b>{formatArs(o.totalArs)}</b>
       </p>
 
-      {fulfillable && (
+      {inFulfillment && (
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
           {next && (
             <Button variant="primary" className="px-3 py-1" onClick={() => setStatus(next)} disabled={busy}>
@@ -84,6 +103,25 @@ function OrderRow({ o, onChange }: { o: Order; onChange: () => void }) {
           </Select>
         </div>
       )}
+
+      {claimOpen && (
+        <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+          {o.warrantyClaim && (
+            <p className="rounded-lg bg-orange-50 p-2 text-xs text-orange-800">
+              <b>Reclamo del cliente:</b> {o.warrantyClaim}
+            </p>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-medium text-orange-700">Resolver reclamo de garantía:</span>
+            <Button variant="primary" className="px-3 py-1" onClick={() => setStatus('warranty_accepted')} disabled={busy}>
+              Aceptar garantía
+            </Button>
+            <Button variant="danger" className="px-3 py-1" onClick={() => setStatus('warranty_rejected')} disabled={busy}>
+              Rechazar garantía
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
@@ -97,23 +135,48 @@ export function AdminOrdersPage() {
 
   if (isLoading) return <Spinner label="Cargando órdenes…" />;
 
-  const totalPaid = (data ?? [])
-    .filter((o) => o.status !== 'pending' && o.status !== 'failed')
-    .reduce((s, o) => s + o.totalArs, 0);
+  const orders = data ?? [];
+  const isConfirmed = (o: Order) => o.status !== 'pending' && o.status !== 'failed';
+  const confirmed = orders.filter(isConfirmed);
+
+  const revenue = confirmed.reduce((s, o) => s + o.totalArs, 0);
+  const unitsSold = confirmed.reduce(
+    (s, o) => s + o.items.reduce((a, i) => a + i.quantity, 0),
+    0,
+  );
+  const delivered = orders.filter(
+    (o) => o.status === 'delivered' || o.status.startsWith('warranty_'),
+  ).length;
+  const inProcess = orders.filter((o) =>
+    ['paid', 'ready_pickup', 'preparing', 'shipped'].includes(o.status),
+  ).length;
+  const claimsOpen = orders.filter((o) => o.status === 'warranty_claimed').length;
+  const claimsAccepted = orders.filter((o) => o.status === 'warranty_accepted').length;
+  const claimsRejected = orders.filter((o) => o.status === 'warranty_rejected').length;
+  const pendingPay = orders.filter((o) => o.status === 'pending').length;
 
   const refresh = () => qc.invalidateQueries({ queryKey: ['admin-orders'] });
 
   return (
     <div className="space-y-4">
-      <Card>
-        <p className="text-sm text-slate-500">Ingresos confirmados (pagados)</p>
-        <p className="text-2xl font-bold text-green-600">{formatArs(totalPaid)}</p>
-      </Card>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="Ingresos confirmados" value={formatArs(revenue)} accent="text-green-600" />
+        <Stat label="Celulares vendidos" value={String(unitsSold)} />
+        <Stat label="Órdenes confirmadas" value={String(confirmed.length)} />
+        <Stat label="Entregadas" value={String(delivered)} />
+        <Stat label="En proceso" value={String(inProcess)} />
+        <Stat label="Pago pendiente" value={String(pendingPay)} accent="text-amber-600" />
+        <Stat label="Reclamos abiertos" value={String(claimsOpen)} accent="text-orange-600" />
+        <Stat
+          label="Garantías ac./rech."
+          value={`${claimsAccepted} / ${claimsRejected}`}
+        />
+      </div>
 
-      {(data?.length ?? 0) === 0 ? (
+      {orders.length === 0 ? (
         <p className="text-slate-500">No hay órdenes todavía.</p>
       ) : (
-        data!.map((o) => <OrderRow key={o.id} o={o} onChange={refresh} />)
+        orders.map((o) => <OrderRow key={o.id} o={o} onChange={refresh} />)
       )}
     </div>
   );

@@ -194,9 +194,15 @@ export type OrderStatus =
   | 'ready_pickup' // listo para retirar en local (retiro)
   | 'preparing' // preparando para el envio (envio)
   | 'shipped' // en manos del cartero (envio)
-  | 'delivered'; // entregado
+  | 'delivered' // entregado
+  | 'warranty_claimed' // reclamo de garantia iniciado (cliente)
+  | 'warranty_accepted' // garantia aceptada (admin)
+  | 'warranty_rejected'; // garantia rechazada (admin)
 
 export type DeliveryMethod = 'pickup' | 'shipping';
+
+/** Warranty length (days) applied from the delivery date. */
+export const WARRANTY_DAYS = 180;
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: 'Pendiente de pago',
@@ -206,6 +212,9 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   preparing: 'Preparando para el envío',
   shipped: 'En manos del cartero',
   delivered: 'Entregado',
+  warranty_claimed: 'Reclamo de garantía iniciado',
+  warranty_accepted: 'Garantía aceptada',
+  warranty_rejected: 'Garantía rechazada',
 };
 
 export const DELIVERY_LABELS: Record<DeliveryMethod, string> = {
@@ -230,6 +239,18 @@ export function nextOrderStatus(
   return steps[i + 1];
 }
 
+/** The client can claim warranty only after delivery and before it expires. */
+export function canClaimWarranty(
+  o: { status: OrderStatus; warrantyUntil: string | null },
+  now: number = Date.now(),
+): boolean {
+  return (
+    o.status === 'delivered' &&
+    o.warrantyUntil != null &&
+    new Date(o.warrantyUntil).getTime() > now
+  );
+}
+
 export interface OrderItem {
   productId: number;
   brand: string;
@@ -244,6 +265,10 @@ export interface Order {
   totalArs: number;
   items: OrderItem[];
   deliveryMethod: DeliveryMethod;
+  /** End of warranty period (set on delivery); null until delivered. */
+  warrantyUntil: string | null;
+  /** Description the client wrote when opening a warranty claim. */
+  warrantyClaim: string | null;
   // customer snapshot / contact data
   customerName: string | null;
   customerEmail: string | null;
