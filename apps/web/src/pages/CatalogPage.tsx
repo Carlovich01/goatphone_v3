@@ -38,7 +38,7 @@ export function CatalogPage() {
   return (
     <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
       <aside className="space-y-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="rounded-xl border border-brand/20 bg-gradient-to-br from-brand/25 via-purple-100/50 to-white p-4 shadow-sm backdrop-blur">
           <h3 className="mb-3 font-semibold">Filtros</h3>
           <label className="mb-1 block text-xs text-slate-500">Buscar</label>
           <Input placeholder="Modelo o marca" value={q} onChange={(e) => setQ(e.target.value)} />
