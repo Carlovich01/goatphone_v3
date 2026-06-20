@@ -14,6 +14,9 @@ export interface ListFilters {
   priceMin?: number;
   priceMax?: number;
   only5g?: boolean;
+  onlyOffers?: boolean;
+  ramMin?: number;
+  storageMin?: number;
   sort?: 'score' | 'priceAsc' | 'priceDesc' | 'newest';
 }
 
@@ -41,7 +44,19 @@ export class CatalogService {
       if (filters.priceMin !== undefined) where.priceArs.gte = filters.priceMin;
       if (filters.priceMax !== undefined) where.priceArs.lte = filters.priceMax;
     }
-    if (filters.only5g) where.datasetPhone = { has5g: true };
+
+    // spec filters live on the related datasetPhone row
+    const ds: any = {};
+    if (filters.only5g) ds.has5g = true;
+    if (filters.ramMin) ds.ram = { gte: filters.ramMin };
+    if (filters.storageMin) ds.storage = { gte: filters.storageMin };
+    if (Object.keys(ds).length) where.datasetPhone = ds;
+
+    // only products with an active (not expired) temporary offer
+    if (filters.onlyOffers) {
+      where.offerPriceArs = { not: null };
+      where.offerEndsAt = { gt: new Date() };
+    }
 
     const products = await this.prisma.product.findMany({
       where,

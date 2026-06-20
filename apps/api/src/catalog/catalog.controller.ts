@@ -26,6 +26,9 @@ export class CatalogController {
     @Query('priceMin') priceMin?: string,
     @Query('priceMax') priceMax?: string,
     @Query('only5g') only5g?: string,
+    @Query('onlyOffers') onlyOffers?: string,
+    @Query('ramMin') ramMin?: string,
+    @Query('storageMin') storageMin?: string,
     @Query('sort') sort?: ListFilters['sort'],
   ) {
     return this.catalog.list({
@@ -34,6 +37,9 @@ export class CatalogController {
       priceMin: priceMin ? Number(priceMin) : undefined,
       priceMax: priceMax ? Number(priceMax) : undefined,
       only5g: only5g === 'true',
+      onlyOffers: onlyOffers === 'true',
+      ramMin: ramMin ? Number(ramMin) : undefined,
+      storageMin: storageMin ? Number(storageMin) : undefined,
       sort,
     });
   }

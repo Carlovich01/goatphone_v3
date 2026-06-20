@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Search, Plus, Trash2, Save, RefreshCw, Tag } from 'lucide-react';
 import { DatasetPhone, Product, isOfferActive } from '@goatphone/shared';
@@ -151,7 +152,7 @@ export function AdminProductsPage() {
         ) : (products.data?.length ?? 0) === 0 ? (
           <p className="text-sm text-slate-500">Aún no agregaste celulares.</p>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-4">
             {products.data!.map((p) => (
               <ProductRow key={p.id} product={p} onChange={() => qc.invalidateQueries({ queryKey: ['admin-products'] })} />
             ))}
@@ -248,96 +249,123 @@ function ProductRow({ product, onChange }: { product: Product; onChange: () => v
   const hasOffer = product.offerPriceArs != null;
 
   return (
-    <div className="space-y-2 rounded-lg border border-slate-200 p-2 text-sm">
-    <div className="flex flex-wrap items-center gap-3">
-      <div className="flex h-12 w-12 items-center justify-center rounded bg-slate-100">
-        {product.imageUrl ? (
-          <img src={product.imageUrl} alt={product.model} className="h-full w-full object-contain p-1" />
-        ) : (
-          <span className="text-[10px] text-slate-400">—</span>
-        )}
+    <div className="rounded-xl border border-slate-200 bg-white p-4 text-sm shadow-sm">
+      {/* header: image + identity + active toggle */}
+      <div className="flex items-start gap-4">
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg border border-slate-100 bg-slate-50">
+          {product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.model} className="h-full w-full object-contain p-1.5" />
+          ) : (
+            <span className="text-[10px] text-slate-400">Sin foto</span>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs uppercase tracking-wide text-slate-400">{product.brand}</p>
+          <Link
+            to={`/product/${product.id}`}
+            className="block truncate text-base font-semibold hover:text-brand-dark hover:underline"
+            title={`Ver ${product.brand} ${product.model}`}
+          >
+            {product.model}
+          </Link>
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+            <span className="font-medium text-slate-600">{formatArs(product.priceArs)}</span>
+            {isOfferActive(product) && (
+              <span className="rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-700">En oferta</span>
+            )}
+            {!product.isActive && (
+              <span className="rounded-full bg-slate-200 px-2 py-0.5 font-medium text-slate-600">Inactivo</span>
+            )}
+          </div>
+        </div>
+        <label className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs text-slate-600">
+          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Activo
+        </label>
       </div>
-      <div className="min-w-[140px] flex-1">
-        <p className="text-xs text-slate-500">{product.brand}</p>
-        <p className="font-medium">{product.model}</p>
-        <p className="text-xs text-slate-500">{formatArs(product.priceArs)}</p>
-      </div>
-      <label className="text-xs text-slate-500">
-        Precio
-        <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-28" />
-      </label>
-      <label className="text-xs text-slate-500">
-        Stock
-        <Input type="number" value={stock} onChange={(e) => setStock(e.target.value)} className="w-20" />
-      </label>
-      <label className="flex items-center gap-1 text-xs text-slate-500">
-        <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} /> Activo
-      </label>
-      {dirty && (
-        <span className="flex items-center gap-1 text-xs font-medium text-amber-600" title="Tenés cambios sin guardar">
-          <span className="h-2 w-2 rounded-full bg-amber-500" /> Sin guardar
-        </span>
-      )}
-      <Button
-        variant={dirty ? 'primary' : 'outline'}
-        className="px-2 py-1"
-        onClick={save}
-        disabled={saving || !dirty}
-        title={dirty ? 'Guardar cambios' : 'Sin cambios para guardar'}
-      >
-        <Save size={14} /> {saving ? 'Guardando…' : 'Guardar'}
-      </Button>
-      <Button variant="danger" className="px-2 py-1" onClick={remove} disabled={removing} title="Borrar del catálogo">
-        <Trash2 size={14} />
-      </Button>
-    </div>
 
-    {/* temporary offer */}
-    <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 pt-2">
-      <span className="flex items-center gap-1 text-xs font-medium text-green-700">
-        <Tag size={14} /> Oferta temporal
-      </span>
-      <label className="text-xs text-slate-500">
-        Precio oferta
-        <Input
-          type="number"
-          value={offerPrice}
-          onChange={(e) => setOfferPrice(e.target.value)}
-          placeholder="menor al normal"
-          className="w-28"
-        />
-      </label>
-      <label className="text-xs text-slate-500">
-        Hasta
-        <Input
-          type="datetime-local"
-          value={offerEnds}
-          onChange={(e) => setOfferEnds(e.target.value)}
-          className="w-52"
-        />
-      </label>
-      <Button
-        variant="primary"
-        className="px-2 py-1"
-        onClick={applyOffer}
-        disabled={offerBusy || !offerPrice || !offerEnds}
-      >
-        {offerBusy ? 'Guardando…' : 'Aplicar oferta'}
-      </Button>
-      {hasOffer && (
-        <Button variant="outline" className="px-2 py-1" onClick={removeOffer} disabled={offerBusy}>
-          Quitar oferta
-        </Button>
-      )}
-      {isOfferActive(product) ? (
-        <span className="text-xs font-medium text-green-700">
-          Activa hasta {new Date(product.offerEndsAt!).toLocaleString('es-AR')}
-        </span>
-      ) : hasOffer ? (
-        <span className="text-xs text-slate-400">Oferta vencida</span>
-      ) : null}
-      {offerErr && <span className="text-xs text-red-600">{offerErr}</span>}
-    </div>
+      {/* edit fields + actions */}
+      <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-slate-100 pt-3">
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-slate-500">Precio (ARS)</span>
+          <Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} className="w-32" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-slate-500">Stock</span>
+          <Input type="number" value={stock} onChange={(e) => setStock(e.target.value)} className="w-24" />
+        </label>
+        <div className="ml-auto flex items-center gap-2">
+          {dirty && (
+            <span className="flex items-center gap-1 text-xs font-medium text-amber-600" title="Tenés cambios sin guardar">
+              <span className="h-2 w-2 rounded-full bg-amber-500" /> Sin guardar
+            </span>
+          )}
+          <Button
+            variant={dirty ? 'primary' : 'outline'}
+            className="px-3 py-2"
+            onClick={save}
+            disabled={saving || !dirty}
+            title={dirty ? 'Guardar cambios' : 'Sin cambios para guardar'}
+          >
+            <Save size={14} /> {saving ? 'Guardando…' : 'Guardar'}
+          </Button>
+          <Button variant="danger" className="px-3 py-2" onClick={remove} disabled={removing} title="Borrar del catálogo">
+            <Trash2 size={14} />
+          </Button>
+        </div>
+      </div>
+
+      {/* temporary offer */}
+      <div className="mt-3 rounded-lg bg-slate-50 p-3">
+        <div className="mb-2 flex items-center gap-2">
+          <span className="flex items-center gap-1 text-xs font-semibold text-green-700">
+            <Tag size={14} /> Oferta temporal
+          </span>
+          {isOfferActive(product) ? (
+            <span className="text-xs font-medium text-green-700">
+              · Activa hasta {new Date(product.offerEndsAt!).toLocaleString('es-AR')}
+            </span>
+          ) : hasOffer ? (
+            <span className="text-xs text-slate-400">· Oferta vencida</span>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-slate-500">Precio oferta</span>
+            <Input
+              type="number"
+              value={offerPrice}
+              onChange={(e) => setOfferPrice(e.target.value)}
+              placeholder="menor al normal"
+              className="w-32"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-xs font-medium text-slate-500">Vence</span>
+            <Input
+              type="datetime-local"
+              value={offerEnds}
+              onChange={(e) => setOfferEnds(e.target.value)}
+              className="w-52"
+            />
+          </label>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              variant="primary"
+              className="px-3 py-2"
+              onClick={applyOffer}
+              disabled={offerBusy || !offerPrice || !offerEnds}
+            >
+              {offerBusy ? 'Guardando…' : 'Aplicar oferta'}
+            </Button>
+            {hasOffer && (
+              <Button variant="outline" className="px-3 py-2" onClick={removeOffer} disabled={offerBusy}>
+                Quitar
+              </Button>
+            )}
+          </div>
+        </div>
+        {offerErr && <p className="mt-2 text-xs text-red-600">{offerErr}</p>}
+      </div>
     </div>
   );
 }

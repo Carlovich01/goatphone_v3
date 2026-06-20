@@ -10,6 +10,9 @@ export function CatalogPage() {
   const [brand, setBrand] = useState('');
   const [priceMax, setPriceMax] = useState('');
   const [only5g, setOnly5g] = useState(false);
+  const [onlyOffers, setOnlyOffers] = useState(false);
+  const [ramMin, setRamMin] = useState('');
+  const [storageMin, setStorageMin] = useState('');
   const [sort, setSort] = useState('score');
 
   const brands = useQuery({
@@ -22,6 +25,9 @@ export function CatalogPage() {
   if (brand) params.set('brand', brand);
   if (priceMax) params.set('priceMax', priceMax);
   if (only5g) params.set('only5g', 'true');
+  if (onlyOffers) params.set('onlyOffers', 'true');
+  if (ramMin) params.set('ramMin', ramMin);
+  if (storageMin) params.set('storageMin', storageMin);
   if (sort) params.set('sort', sort);
 
   const { data, isLoading } = useQuery({
@@ -53,7 +59,30 @@ export function CatalogPage() {
             onChange={(e) => setPriceMax(e.target.value)}
           />
 
+          <label className="mb-1 mt-3 block text-xs text-slate-500">Memoria RAM</label>
+          <Select value={ramMin} onChange={(e) => setRamMin(e.target.value)}>
+            <option value="">Cualquiera</option>
+            <option value="4">4 GB o más</option>
+            <option value="6">6 GB o más</option>
+            <option value="8">8 GB o más</option>
+            <option value="12">12 GB o más</option>
+          </Select>
+
+          <label className="mb-1 mt-3 block text-xs text-slate-500">Almacenamiento</label>
+          <Select value={storageMin} onChange={(e) => setStorageMin(e.target.value)}>
+            <option value="">Cualquiera</option>
+            <option value="64">64 GB o más</option>
+            <option value="128">128 GB o más</option>
+            <option value="256">256 GB o más</option>
+            <option value="512">512 GB o más</option>
+          </Select>
+
           <label className="mt-3 flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={onlyOffers} onChange={(e) => setOnlyOffers(e.target.checked)} />
+            Solo ofertas
+          </label>
+
+          <label className="mt-2 flex items-center gap-2 text-sm">
             <input type="checkbox" checked={only5g} onChange={(e) => setOnly5g(e.target.checked)} />
             Solo 5G
           </label>
@@ -70,7 +99,8 @@ export function CatalogPage() {
             variant="outline"
             className="mt-4 w-full"
             onClick={() => {
-              setQ(''); setBrand(''); setPriceMax(''); setOnly5g(false); setSort('score');
+              setQ(''); setBrand(''); setPriceMax(''); setOnly5g(false);
+              setOnlyOffers(false); setRamMin(''); setStorageMin(''); setSort('score');
             }}
           >
             Limpiar filtros
