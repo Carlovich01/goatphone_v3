@@ -10,15 +10,20 @@ import { SpecChart, PHONE_COLORS } from './SpecChart';
 export function SpecCard({
   def,
   products,
+  visible,
   ids,
 }: {
   def: SpecDef;
   products: Product[];
+  /** Subset of columns to display (mobile pages 2 at a time); defaults to all. */
+  visible?: Product[];
   ids: number[];
 }) {
   const [open, setOpen] = useState(false);
+  const shown = visible ?? products;
 
-  // consistent color per product (matches header & markers everywhere)
+  // consistent color per product (matches header & markers everywhere),
+  // keyed by each phone's original index so paging doesn't shuffle colors
   const colors: Record<number, string> = Object.fromEntries(
     products.map((p, i) => [p.id, PHONE_COLORS[i % PHONE_COLORS.length]]),
   );
@@ -44,13 +49,13 @@ export function SpecCard({
         </div>
         <div
           className="grid gap-2 sm:gap-4"
-          style={{ gridTemplateColumns: `repeat(${products.length}, minmax(0,1fr))` }}
+          style={{ gridTemplateColumns: `repeat(${shown.length}, minmax(0,1fr))` }}
         >
-          {products.map((p, i) => (
+          {shown.map((p) => (
             <div key={p.id} className="min-w-0">
               <span
                 className="block truncate text-sm font-semibold sm:text-base"
-                style={{ color: PHONE_COLORS[i % PHONE_COLORS.length] }}
+                style={{ color: colors[p.id] }}
                 title={`${p.brand} ${p.model}`}
               >
                 {specValueLabel((p.specs as any)[def.key], def.unit, def.decimals)}
