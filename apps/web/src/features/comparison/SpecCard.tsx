@@ -43,13 +43,13 @@ export function SpecCard({
           <BarChart3 size={16} className="shrink-0 text-slate-400" />
         </div>
         <div
-          className="grid gap-4"
+          className="grid gap-2 sm:gap-4"
           style={{ gridTemplateColumns: `repeat(${products.length}, minmax(0,1fr))` }}
         >
           {products.map((p, i) => (
             <div key={p.id} className="min-w-0">
               <span
-                className="text-base font-semibold"
+                className="block truncate text-sm font-semibold sm:text-base"
                 style={{ color: PHONE_COLORS[i % PHONE_COLORS.length] }}
                 title={`${p.brand} ${p.model}`}
               >

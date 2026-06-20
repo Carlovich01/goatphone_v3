@@ -194,7 +194,7 @@ function PerPhoneHeader({ dist, colors }: { dist: SpecDistribution; colors: Colo
     const max = dist.max && dist.max > 0 ? dist.max : 1;
     const decimals = getSpecDef(dist.specKey)?.decimals;
     return (
-      <div className="mb-4 grid gap-4" style={{ gridTemplateColumns: `repeat(${m.length}, minmax(0,1fr))` }}>
+      <div className="mb-4 grid gap-2 sm:gap-4" style={{ gridTemplateColumns: `repeat(${m.length}, minmax(0,1fr))` }}>
         {m.map((p) => {
           const v = typeof p.value === 'number' ? p.value : 0;
           const pct = Math.max(4, Math.min(100, (v / max) * 100));
@@ -217,7 +217,7 @@ function PerPhoneHeader({ dist, colors }: { dist: SpecDistribution; colors: Colo
 
   if (dist.type === 'boolean') {
     return (
-      <div className="mb-4 grid gap-4" style={{ gridTemplateColumns: `repeat(${m.length}, minmax(0,1fr))` }}>
+      <div className="mb-4 grid gap-2 sm:gap-4" style={{ gridTemplateColumns: `repeat(${m.length}, minmax(0,1fr))` }}>
         {m.map((p) => (
           <div key={p.productId} className="flex items-center gap-1 text-sm">
             {p.value ? <Check size={16} className="text-green-600" /> : <X size={16} className="text-red-600" />}

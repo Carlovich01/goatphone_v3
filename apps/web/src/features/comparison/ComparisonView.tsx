@@ -89,7 +89,7 @@ export function ComparisonView({ ids, managed = false }: { ids: number[]; manage
       {/* Phone header cards — same column grid as the spec rows below */}
       <div
         ref={headerRef}
-        className="grid gap-4"
+        className="grid gap-2 sm:gap-4"
         style={{ gridTemplateColumns: `repeat(${products.length}, minmax(0,1fr))` }}
       >
         {products.map((p, i) => {
@@ -112,7 +112,7 @@ export function ComparisonView({ ids, managed = false }: { ids: number[]; manage
                   </div>
                 )}
               </div>
-              <div className="flex h-32 items-center justify-center">
+              <div className="flex h-20 items-center justify-center sm:h-32">
                 {p.imageUrl ? (
                   <img src={p.imageUrl} alt={p.model} className="h-full object-contain" />
                 ) : (
@@ -150,7 +150,7 @@ export function ComparisonView({ ids, managed = false }: { ids: number[]; manage
               )}
               <Button
                 variant="primary"
-                className="mt-3 w-full"
+                className="mt-3 w-full px-2 text-xs sm:text-sm"
                 disabled={p.stock <= 0}
                 onClick={() => cart.add({ productId: p.id, brand: p.brand, model: p.model, priceArs: effectivePrice(p), imageUrl: p.imageUrl })}
               >
@@ -172,7 +172,7 @@ export function ComparisonView({ ids, managed = false }: { ids: number[]; manage
           >
             <div className="mx-auto max-w-7xl px-4">
               <div
-                className="grid gap-4 py-2"
+                className="grid gap-2 py-2 sm:gap-4"
                 style={{ gridTemplateColumns: `repeat(${products.length}, minmax(0,1fr))` }}
               >
                 {products.map((p, i) => {

@@ -33,7 +33,7 @@ export function FloatingCompareBar() {
       <button
         onClick={() => setMinimized(false)}
         title={`Comparación (${ids.length})`}
-        className="fixed bottom-6 left-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-white shadow-lg ring-1 ring-white transition hover:bg-slate-800"
+        className="fixed bottom-4 left-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-slate-950 text-white shadow-lg ring-1 ring-white transition hover:bg-slate-800 sm:bottom-6 sm:left-6"
       >
         <GitCompare className="text-brand-light" size={22} />
         <span className="absolute -right-1 -top-1 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-white bg-brand px-1 text-xs font-bold">
@@ -44,7 +44,7 @@ export function FloatingCompareBar() {
   }
 
   return (
-    <div className="fixed bottom-6 left-6 z-50 w-80">
+    <div className="fixed bottom-4 left-4 z-50 w-[calc(100vw-2rem)] max-w-xs sm:bottom-6 sm:left-6">
       {open && (
         <div className="mb-2 overflow-hidden rounded-xl border border-slate-800 bg-slate-950 text-white shadow-2xl ring-1 ring-white">
           <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">

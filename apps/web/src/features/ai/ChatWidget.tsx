@@ -56,7 +56,7 @@ export function ChatWidget() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex h-[28rem] w-[22rem] flex-col rounded-xl border border-slate-800 bg-slate-950 text-white shadow-2xl">
+    <div className="fixed bottom-4 right-4 z-50 flex h-[70vh] max-h-[28rem] w-[calc(100vw-2rem)] max-w-[22rem] flex-col rounded-xl border border-slate-800 bg-slate-950 text-white shadow-2xl sm:bottom-6 sm:right-6">
       <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
         <span className="flex items-center gap-2 font-semibold">
           <MessageCircle size={18} className="text-brand-light" /> Asistente GOATPHONE
